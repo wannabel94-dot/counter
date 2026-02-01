@@ -276,27 +276,28 @@ button.undo:hover {
   box-shadow: 0 8px 28px rgba(76,175,80,0.5);
 }
 
+/* SUBTRACT KEYPAD BUTTONS - subtle red palette */
 .panel.sub .keys button {
-  background: linear-gradient(135deg, #d32f2f 0%, #e53935 100%);
-  color: #fff;
-  box-shadow: 
-    0 3px 12px rgba(244,67,54,0.3),
-    inset 0 1px 0 rgba(255,255,255,0.1);
+  background: linear-gradient(135deg, #f7c0c0 0%, #f5a5a5 100%); /* very soft red */
+  color: #3b0000; /* dark text for readability */
+  box-shadow: 0 2px 6px rgba(244,67,54,0.25); /* subtle shadow */
+  transition: all 0.15s ease;
 }
 
 .panel.sub .keys button:hover {
-  background: linear-gradient(135deg, #e53935 0%, #ef5350 100%);
-  box-shadow: 
-    0 5px 18px rgba(244,67,54,0.4),
-    inset 0 1px 0 rgba(255,255,255,0.15);
+  background: linear-gradient(135deg, #f5a5a5 0%, #f28b82 100%); /* slightly brighter on hover */
+  box-shadow: 0 3px 10px rgba(244,67,54,0.35);
 }
 
+/* Clear button in subtract panel - slightly deeper for distinction */
 .panel.sub .keys button.clear { 
-  background: linear-gradient(135deg, #c62828 0%, #d32f2f 100%);
+  background: linear-gradient(135deg, #f28b82 0%, #f17474 100%);
+  color: #1a1a1a;
 }
 
+/* OK button - strong, noticeable red */
 .panel.sub .ok { 
-  background: linear-gradient(135deg, #ef5350 0%, #e57373 100%);
+  background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
   color: #1a1a1a;
   box-shadow: 0 6px 20px rgba(244,67,54,0.4);
   font-size: 1.4rem;
@@ -305,6 +306,7 @@ button.undo:hover {
 .panel.sub .ok:hover {
   box-shadow: 0 8px 28px rgba(244,67,54,0.5);
 }
+
 
 .ok { 
   grid-column: span 2;
