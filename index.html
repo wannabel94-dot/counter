@@ -20,8 +20,22 @@ body {
 
 h1 { font-size: 2.2rem; margin-bottom: 10px; }
 h2 { font-size: 1.8rem; margin-bottom: 10px; }
-#lastChange { font-size: 1.6rem; margin-bottom: 15px; font-weight: bold; }
+#lastChange {
+  font-size: 1.6rem;
+  margin-bottom: 15px;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
 
+/* Flash animation for last transaction */
+@keyframes flash {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+/* Buttons */
 button { cursor: pointer; }
 button.reset, button.undo {
   margin: 5px;
@@ -86,12 +100,10 @@ button.reset, button.undo {
 }
 .keys button:active { transform: scale(0.96); }
 
-/* OK button */
 .ok { grid-column: span 2; font-weight: bold; }
 .ok.add { background: #4caf50; color: #000; }
 .ok.sub { background: #f44336; color: #000; }
 
-/* Clear button */
 .clear { background: #2e7d32; color: #fff; }
 .panel.sub .keys button { background: #ef5350; color: #000; }
 .panel.sub .keys button.clear { background: #e53935; color: #fff; }
@@ -99,6 +111,7 @@ button.reset, button.undo {
 </head>
 
 <body>
+<h1 id="status">Ready</h1>
 <div id="lastChange"></div>
 <h2>Total: €<span id="total">0</span></h2>
 
@@ -142,7 +155,6 @@ document.getElementById("total").textContent = total;
 
 // Load last change
 let lastChange = Number(localStorage.getItem(LAST_CHANGE_KEY) || 0);
-updateLastChangeDisplay();
 
 // NFC action
 const params = new URLSearchParams(location.search);
@@ -150,17 +162,15 @@ const action = params.get("action");
 const now = Date.now();
 const last = Number(localStorage.getItem(LAST_SCAN) || 0);
 
-// Prevent double scans
-if (action && now - last > 1500) {
+if(action && now - last > 1500){
   localStorage.setItem(LAST_SCAN, now);
   mode = action;
   openModal();
 }
 
-function openModal() {
-  input = "";
+function openModal(){
+  input="";
   updateDisplay();
-
   const modal = document.getElementById("modal");
   const display = document.getElementById("display");
   const okButton = document.getElementById("okButton");
@@ -168,86 +178,87 @@ function openModal() {
 
   modal.classList.add("active");
 
-  if(mode === "add") {
-    display.classList.add("add");
-    display.classList.remove("sub");
-    okButton.classList.add("add");
-    okButton.classList.remove("sub");
-    panel.classList.add("add");
-    panel.classList.remove("sub");
-    panel.style.boxShadow = "0 0 60px rgba(76,175,80,0.8)";
-    document.getElementById("status").textContent = "Add amount";
+  if(mode==="add"){
+    display.classList.add("add"); display.classList.remove("sub");
+    okButton.classList.add("add"); okButton.classList.remove("sub");
+    panel.classList.add("add"); panel.classList.remove("sub");
+    panel.style.boxShadow="0 0 60px rgba(76,175,80,0.8)";
+    document.getElementById("status").textContent="Add amount";
   } else {
-    display.classList.add("sub");
-    display.classList.remove("add");
-    okButton.classList.add("sub");
-    okButton.classList.remove("add");
-    panel.classList.add("sub");
-    panel.classList.remove("add");
-    panel.style.boxShadow = "0 0 60px rgba(244,67,54,0.8)";
-    document.getElementById("status").textContent = "Subtract amount";
+    display.classList.add("sub"); display.classList.remove("add");
+    okButton.classList.add("sub"); okButton.classList.remove("add");
+    panel.classList.add("sub"); panel.classList.remove("add");
+    panel.style.boxShadow="0 0 60px rgba(244,67,54,0.8)";
+    document.getElementById("status").textContent="Subtract amount";
   }
 }
 
-function press(n) { input += n; updateDisplay(); }
-function clearInput() { input = ""; updateDisplay(); }
-
-function updateDisplay() {
-  const display = document.getElementById("display");
-  const prefixSpan = display.querySelector(".prefix");
-  const valueSpan = display.querySelector(".value");
-  prefixSpan.textContent = mode === "add" ? "+" : "-";
-  valueSpan.textContent = input || "0";
+function press(n){ input+=n; updateDisplay(); }
+function clearInput(){ input=""; updateDisplay(); }
+function updateDisplay(){
+  const display=document.getElementById("display");
+  const prefixSpan=display.querySelector(".prefix");
+  const valueSpan=display.querySelector(".value");
+  prefixSpan.textContent=mode==="add"?"+":"-";
+  valueSpan.textContent=input||"0";
 }
 
-function confirmAmount() {
-  const amount = Number(input || 0);
+function confirmAmount(){
+  const amount=Number(input||0);
   if(!amount) return;
-  const delta = mode === "add" ? amount : -amount;
+
+  const delta = mode==="add"? amount : -amount;
   total += delta;
-  localStorage.setItem(TOTAL_KEY, total);
+  localStorage.setItem(TOTAL_KEY,total);
   localStorage.setItem(LAST_CHANGE_KEY, delta);
   lastChange = delta;
+
   document.getElementById("total").textContent = total;
-  updateLastChangeDisplay();
+  showLastChange(delta);
+
   if(navigator.vibrate) navigator.vibrate(40);
   document.getElementById("modal").classList.remove("active");
-  document.getElementById("status").textContent = `${mode === "add"?"+":"-"} €${amount}`;
-  const flashColor = mode === "add"? "#1b5e20": "#a00000";
+  document.getElementById("status").textContent = `${mode==="add"?"+":"-"} €${amount}`;
+
+  const flashColor = mode==="add"? "#1b5e20": "#a00000";
   document.body.style.background = flashColor;
   setTimeout(()=>document.body.style.background="#111",150);
 }
 
-function updateLastChangeDisplay() {
+function showLastChange(delta){
   const lastEl = document.getElementById("lastChange");
-  if(!lastChange) { lastEl.textContent=""; return; }
-  lastEl.textContent = (lastChange>0?"+":"") + lastChange;
-  lastEl.style.color = lastChange>0?"#4caf50":"#f44336";
+  lastEl.textContent = (delta>0?"+":"") + "€" + delta;
+  lastEl.style.color = delta>0?"#4caf50":"#f44336";
+  lastEl.style.opacity=1;
+  lastEl.style.animation="flash 1.5s forwards";
+
+  // Clear after animation
+  setTimeout(()=>{ lastEl.style.opacity=0; }, 1500);
 }
 
-function undo() {
+function undo(){
   const last = Number(localStorage.getItem(LAST_CHANGE_KEY)||0);
   if(!last) return;
+
   total -= last;
   localStorage.setItem(TOTAL_KEY,total);
   document.getElementById("total").textContent = total;
-  lastChange = 0;
+  lastChange=0;
   localStorage.removeItem(LAST_CHANGE_KEY);
-  updateLastChangeDisplay();
-  document.getElementById("status").textContent = "Last transaction undone";
+  document.getElementById("lastChange").style.opacity=0;
+  document.getElementById("status").textContent="Last transaction undone";
 }
 
-function reset() {
+function reset(){
   if(!confirm("Reset total?")) return;
   localStorage.clear();
   location.reload();
 }
 
-// Optional: Service Worker for PWA
-if("serviceWorker" in navigator) {
+// Optional PWA Service Worker
+if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js");
 }
 </script>
 </body>
 </html>
-
