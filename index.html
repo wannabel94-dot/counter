@@ -111,7 +111,6 @@ button.reset, button.undo {
 </head>
 
 <body>
-<h1 id="status">Ready</h1>
 <div id="lastChange"></div>
 <h2>Total: €<span id="total">0</span></h2>
 
@@ -230,7 +229,7 @@ function showLastChange(delta){
   lastEl.textContent = (delta>0?"+":"") + "€" + delta;
   lastEl.style.color = delta>0?"#4caf50":"#f44336";
   lastEl.style.opacity=1;
-  lastEl.style.animation="flash 1.5s forwards";
+  lastEl.style.animation="flash 2s forwards";
 
   // Clear after animation
   setTimeout(()=>{ lastEl.style.opacity=0; }, 1500);
