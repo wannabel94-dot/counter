@@ -18,29 +18,12 @@ body {
   text-align: center;
 }
 
-h1 {
-  font-size: 2.2rem;
-  margin-bottom: 10px;
-}
+h1 { font-size: 2.2rem; margin-bottom: 10px; }
+h2 { font-size: 1.8rem; margin-bottom: 10px; }
+#lastChange { font-size: 1.6rem; margin-bottom: 15px; font-weight: bold; }
 
-h2 {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
-}
-
-#lastChange {
-  font-size: 1.6rem;
-  margin-bottom: 15px;
-  font-weight: bold;
-}
-
-/* Buttons */
-button {
-  cursor: pointer;
-}
-
-button.reset,
-button.undo {
+button { cursor: pointer; }
+button.reset, button.undo {
   margin: 5px;
   padding: 10px 20px;
   font-size: 1rem;
@@ -57,10 +40,7 @@ button.undo {
   align-items: center;
   justify-content: center;
 }
-
-.modal.active {
-  display: flex;
-}
+.modal.active { display: flex; }
 
 /* Calculator panel */
 .panel {
@@ -82,22 +62,11 @@ button.undo {
   justify-content: flex-end;
 }
 
-.display span.prefix {
-  margin-right: auto;
-  font-size: 2.2rem;
-  font-weight: bold;
-}
+.display span.prefix { margin-right: auto; font-size: 2.2rem; font-weight: bold; }
 
-/* ADD / SUBTRACT display themes */
-.display.add {
-  background: #dfffdc;
-  color: #0b3d1c;
-}
-
-.display.sub {
-  background: #ffe3e3;   /* lighter red */
-  color: #8a1c1c;
-}
+/* ADD/SUBTRACT screen themes */
+.display.add { background: #dfffdc; color: #0b3d1c; }
+.display.sub { background: #ffdcdc; color: #8a1c1c; }
 
 /* Keys grid */
 .keys {
@@ -106,7 +75,6 @@ button.undo {
   gap: 10px;
 }
 
-/* Default (ADD mode) buttons */
 .keys button {
   font-size: 1.4rem;
   padding: 14px;
@@ -116,49 +84,21 @@ button.undo {
   color: #e8f5e9;
   transition: background 0.15s ease, transform 0.05s ease;
 }
-
-.keys button:active {
-  transform: scale(0.96);
-}
+.keys button:active { transform: scale(0.96); }
 
 /* OK button */
-.ok {
-  grid-column: span 2;
-  font-weight: bold;
-}
+.ok { grid-column: span 2; font-weight: bold; }
+.ok.add { background: #4caf50; color: #000; }
+.ok.sub { background: #f44336; color: #000; }
 
-.ok.add {
-  background: #4caf50;
-  color: #000;
-}
-
-.ok.sub {
-  background: #f44336;
-  color: #000;
-}
-
-/* Clear button (add mode) */
-.clear {
-  background: #2e7d32;
-  color: #fff;
-}
-
-/* ---------- SUBTRACT MODE BUTTONS ---------- */
-.panel.sub .keys button {
-  background: #ef5350;   /* light red */
-  color: #000;
-}
-
-.panel.sub .keys button.clear {
-  background: #e53935;
-  color: #fff;
-}
-
+/* Clear button */
+.clear { background: #2e7d32; color: #fff; }
+.panel.sub .keys button { background: #ef5350; color: #000; }
+.panel.sub .keys button.clear { background: #e53935; color: #fff; }
 </style>
 </head>
 
 <body>
-
 <h1 id="status">Ready</h1>
 <div id="lastChange"></div>
 <h2>Total: €<span id="total">0</span></h2>
@@ -229,52 +169,29 @@ function openModal() {
 
   modal.classList.add("active");
 
- if (mode === "add") {
-  display.classList.add("add");
-  display.classList.remove("sub");
-
-  okButton.classList.add("add");
-  okButton.classList.remove("sub");
-
-  panel.classList.remove("sub");   // ✅ ADD
-  panel.classList.add("add");      // ✅ ADD
-
-  panel.style.boxShadow = "0 0 60px rgba(76,175,80,0.8)";
-  document.getElementById("status").textContent = "Add amount";
-} else {
-  display.classList.add("sub");
-  display.classList.remove("add");
-
-  okButton.classList.add("sub");
-  okButton.classList.remove("add");
-
-  panel.classList.remove("add");   // ✅ ADD
-  panel.classList.add("sub");      // ✅ ADD
-
-  panel.style.boxShadow = "0 0 60px rgba(244,67,54,0.8)";
-  document.getElementById("status").textContent = "Subtract amount";
-}
-
- document.getElementById("status").textContent = "Add amount";
+  if(mode === "add") {
+    display.classList.add("add");
+    display.classList.remove("sub");
+    okButton.classList.add("add");
+    okButton.classList.remove("sub");
+    panel.classList.add("add");
+    panel.classList.remove("sub");
+    panel.style.boxShadow = "0 0 60px rgba(76,175,80,0.8)";
+    document.getElementById("status").textContent = "Add amount";
   } else {
     display.classList.add("sub");
     display.classList.remove("add");
     okButton.classList.add("sub");
     okButton.classList.remove("add");
+    panel.classList.add("sub");
+    panel.classList.remove("add");
     panel.style.boxShadow = "0 0 60px rgba(244,67,54,0.8)";
     document.getElementById("status").textContent = "Subtract amount";
   }
 }
 
-function press(n) {
-  input += n;
-  updateDisplay();
-}
-
-function clearInput() {
-  input = "";
-  updateDisplay();
-}
+function press(n) { input += n; updateDisplay(); }
+function clearInput() { input = ""; updateDisplay(); }
 
 function updateDisplay() {
   const display = document.getElementById("display");
@@ -286,67 +203,52 @@ function updateDisplay() {
 
 function confirmAmount() {
   const amount = Number(input || 0);
-  if (!amount) return;
-
+  if(!amount) return;
   const delta = mode === "add" ? amount : -amount;
   total += delta;
   localStorage.setItem(TOTAL_KEY, total);
-
-  // save last transaction for undo
   localStorage.setItem(LAST_CHANGE_KEY, delta);
   lastChange = delta;
-
   document.getElementById("total").textContent = total;
   updateLastChangeDisplay();
-
-  if (navigator.vibrate) navigator.vibrate(40);
-
+  if(navigator.vibrate) navigator.vibrate(40);
   document.getElementById("modal").classList.remove("active");
-  document.getElementById("status").textContent =
-    `${mode === "add" ? "+" : "-"} €${amount}`;
-
-  // flash body
-  const flashColor = mode === "add" ? "#1b5e20" : "#a00000";
+  document.getElementById("status").textContent = `${mode === "add"?"+":"-"} €${amount}`;
+  const flashColor = mode === "add"? "#1b5e20": "#a00000";
   document.body.style.background = flashColor;
-  setTimeout(() => { document.body.style.background = "#111"; }, 150);
+  setTimeout(()=>document.body.style.background="#111",150);
 }
 
 function updateLastChangeDisplay() {
   const lastEl = document.getElementById("lastChange");
-  if (!lastChange) {
-    lastEl.textContent = "";
-    return;
-  }
-  lastEl.textContent = (lastChange > 0 ? "+" : "") + lastChange;
-  lastEl.style.color = lastChange > 0 ? "#4caf50" : "#f44336";
+  if(!lastChange) { lastEl.textContent=""; return; }
+  lastEl.textContent = (lastChange>0?"+":"") + lastChange;
+  lastEl.style.color = lastChange>0?"#4caf50":"#f44336";
 }
 
 function undo() {
-  const last = Number(localStorage.getItem(LAST_CHANGE_KEY) || 0);
-  if (!last) return;
-
+  const last = Number(localStorage.getItem(LAST_CHANGE_KEY)||0);
+  if(!last) return;
   total -= last;
-  localStorage.setItem(TOTAL_KEY, total);
+  localStorage.setItem(TOTAL_KEY,total);
   document.getElementById("total").textContent = total;
-
   lastChange = 0;
   localStorage.removeItem(LAST_CHANGE_KEY);
   updateLastChangeDisplay();
-
   document.getElementById("status").textContent = "Last transaction undone";
 }
 
 function reset() {
-  if (!confirm("Reset total?")) return;
+  if(!confirm("Reset total?")) return;
   localStorage.clear();
   location.reload();
 }
 
-// Service Worker (optional)
-if ("serviceWorker" in navigator) {
+// Optional: Service Worker for PWA
+if("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
 </script>
-
 </body>
 </html>
+
