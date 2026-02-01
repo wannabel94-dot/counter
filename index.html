@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>NFC Cash Counter</title>
+<title>Contador NFC de Dinero</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0b3d1c">
@@ -30,7 +30,7 @@ h2 {
   text-transform: uppercase;
 }
 
-/* LAST CHANGE */
+/* ÚLTIMO CAMBIO */
 #lastChange {
   font-size: 3.5rem;
   margin-bottom: 20px;
@@ -46,7 +46,7 @@ h2 {
 }
 
 #total {
-  font-size: 3.8rem;
+  font-size: 3rem; /* reduced size */
   font-weight: 700;
   letter-spacing: -2px;
   background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
@@ -56,7 +56,7 @@ h2 {
   display: inline-block;
 }
 
-/* ===== ACTION BUTTONS ===== */
+/* BOTONES DE ACCIÓN */
 .actions {
   margin: 30px 0 40px;
   display: flex;
@@ -98,23 +98,23 @@ button:active {
   transform: scale(0.96);
 }
 
-/* UNDO */
+/* DESHACER (ahora rojo) */
 button.undo {
-  background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
-  color: #1a1a1a;
+  background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
+  color: #fff;
   box-shadow:
-    0 4px 15px rgba(76,175,80,0.4),
+    0 4px 15px rgba(244,67,54,0.4),
     0 2px 4px rgba(0,0,0,0.2);
 }
 
 button.undo:hover {
   box-shadow:
-    0 6px 25px rgba(76,175,80,0.6),
+    0 6px 25px rgba(244,67,54,0.6),
     0 4px 8px rgba(0,0,0,0.2);
   transform: translateY(-2px);
 }
 
-/* RESET */
+/* REINICIAR */
 button.reset {
   background: linear-gradient(135deg, #424242 0%, #303030 100%);
   color: #fff;
@@ -154,7 +154,7 @@ button.reset:hover {
   backdrop-filter: blur(10px);
 }
 
-/* GLOWS */
+/* BRILLOS */
 .panel.add {
   box-shadow: 
     0 0 40px rgba(76,175,80,0.6),
@@ -169,7 +169,7 @@ button.reset:hover {
     0 20px 60px rgba(0,0,0,0.5);
 }
 
-/* DISPLAY */
+/* PANTALLA */
 .display {
   display: flex;
   align-items: center;
@@ -202,7 +202,7 @@ button.reset:hover {
     0 4px 12px rgba(244,67,54,0.2);
 }
 
-/* KEYS */
+/* TECLAS */
 .keys {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -273,7 +273,7 @@ button.reset:hover {
   font-weight: 700;
 }
 
-/* TABLE */
+/* TABLA */
 table {
   margin: 20px auto;
   border-collapse: separate;
@@ -311,25 +311,25 @@ td.sub { color: #ef5350; font-weight: 600; }
 <body>
 
 <div id="lastChange"></div>
-<h2>Total: <span id="total">0</span></h2>
+<h2>Total: €<span id="total">0</span></h2>
 
 <div class="actions">
-  <button class="undo" onclick="undo()">Undo</button>
-  <button class="reset" onclick="resetBalance()">Reset</button>
+  <button class="undo" onclick="undo()">Deshacer</button>
+  <button class="reset" onclick="resetBalance()">Reiniciar</button>
 </div>
 
 <table>
   <thead>
     <tr>
-      <th>Time</th>
-      <th>Change</th>
+      <th>Hora</th>
+      <th>Cambio</th>
       <th>Total</th>
     </tr>
   </thead>
   <tbody id="logBody"></tbody>
 </table>
 
-<!-- CALCULATOR MODAL -->
+<!-- CALCULADORA -->
 <div class="modal" id="modal">
   <div class="panel add" id="panel">
     <div class="display add" id="display">
@@ -348,7 +348,7 @@ td.sub { color: #ef5350; font-weight: 600; }
       <button onclick="press(9)">9</button>
       <button onclick="press(0)">0</button>
       <button class="clear" onclick="clearInput()">C</button>
-      <button class="ok" onclick="confirmInput()">OK</button>
+      <button class="ok" onclick="confirmInput()">Aceptar</button>
     </div>
   </div>
 </div>
@@ -392,12 +392,12 @@ function confirmInput(){
   if(!amount) return;
 
   const delta = mode === "add" ? amount : -amount;
-  if(total + delta < 0){ alert("Total cannot go below zero"); return; }
+  if(total + delta < 0){ alert("El total no puede ser menor que cero"); return; }
 
   total += delta;
   localStorage.setItem(TOTAL_KEY, total);
 
-  const time = new Date().toLocaleString("en-GB", {
+  const time = new Date().toLocaleString("es-ES", {
     day:"2-digit", month:"2-digit", year:"2-digit",
     hour:"2-digit", minute:"2-digit"
   });
@@ -417,7 +417,7 @@ function animateChange(delta){
   el.style.color = delta > 0 ? "#4caf50" : "#f44336";
   el.style.animation = "none";
   el.offsetHeight;
-  el.style.animation = "flash 2.5s forwards";
+  el.style.animation = "flash 1.5s forwards"; /* quicker animation */
 }
 
 function renderLog(){
@@ -428,7 +428,7 @@ function renderLog(){
     tr.innerHTML = `
       <td>${t.time}</td>
       <td class="${t.delta>0?"add":"sub"}">${t.delta>0?"+":""}${t.delta}</td>
-      <td>${t.total}</td>`;
+      <td>€${t.total}</td>`;
     body.appendChild(tr);
   });
 }
@@ -444,9 +444,8 @@ function undo(){
   renderLog();
 }
 
-// ✅ FIXED RESET
 function resetBalance(){
-  if(!window.confirm("Are you sure you want to reset the balance to 0?\nThis will clear all transactions.")) return;
+  if(!window.confirm("¿Estás seguro de reiniciar el saldo a 0?\nEsto borrará todas las transacciones.")) return;
   total = 0;
   log = [];
   localStorage.setItem(TOTAL_KEY, total);
