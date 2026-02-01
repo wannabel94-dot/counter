@@ -25,12 +25,13 @@ h1 {
 
 h2 {
   font-size: 1.8rem;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 #lastChange {
   font-size: 1.6rem;
   margin-bottom: 15px;
+  font-weight: bold;
 }
 
 /* Buttons */
@@ -73,7 +74,6 @@ button.reset, button.undo {
   margin-bottom: 12px;
   border-radius: 8px;
   font-weight: bold;
-  text-align: right;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -140,8 +140,8 @@ button.reset, button.undo {
 <body>
 
 <h1 id="status">Ready</h1>
-<h2>Total: €<span id="total">0</span></h2>
 <div id="lastChange"></div>
+<h2>Total: €<span id="total">0</span></h2>
 
 <button class="undo" onclick="undo()">Undo</button>
 <button class="reset" onclick="reset()">Reset</button>
@@ -181,11 +181,11 @@ let mode = "add";
 let total = Number(localStorage.getItem(TOTAL_KEY) || 0);
 document.getElementById("total").textContent = total;
 
-// Load last change if exists
+// Load last change
 let lastChange = Number(localStorage.getItem(LAST_CHANGE_KEY) || 0);
 updateLastChangeDisplay();
 
-// Read NFC action
+// NFC action
 const params = new URLSearchParams(location.search);
 const action = params.get("action");
 const now = Date.now();
@@ -214,14 +214,14 @@ function openModal() {
     display.classList.remove("sub");
     okButton.classList.add("add");
     okButton.classList.remove("sub");
-    panel.style.boxShadow = "0 0 50px rgba(76,175,80,0.7)";
+    panel.style.boxShadow = "0 0 60px rgba(76,175,80,0.8)";
     document.getElementById("status").textContent = "Add amount";
   } else {
     display.classList.add("sub");
     display.classList.remove("add");
     okButton.classList.add("sub");
     okButton.classList.remove("add");
-    panel.style.boxShadow = "0 0 50px rgba(244,67,54,0.7)";
+    panel.style.boxShadow = "0 0 60px rgba(244,67,54,0.8)";
     document.getElementById("status").textContent = "Subtract amount";
   }
 }
@@ -240,7 +240,6 @@ function updateDisplay() {
   const display = document.getElementById("display");
   const prefixSpan = display.querySelector(".prefix");
   const valueSpan = display.querySelector(".value");
-
   prefixSpan.textContent = mode === "add" ? "+" : "-";
   valueSpan.textContent = input || "0";
 }
@@ -255,9 +254,9 @@ function confirmAmount() {
 
   // save last transaction for undo
   localStorage.setItem(LAST_CHANGE_KEY, delta);
+  lastChange = delta;
 
   document.getElementById("total").textContent = total;
-  lastChange = delta;
   updateLastChangeDisplay();
 
   if (navigator.vibrate) navigator.vibrate(40);
@@ -266,7 +265,7 @@ function confirmAmount() {
   document.getElementById("status").textContent =
     `${mode === "add" ? "+" : "-"} €${amount}`;
 
-  // flash feedback
+  // flash body
   const flashColor = mode === "add" ? "#1b5e20" : "#a00000";
   document.body.style.background = flashColor;
   setTimeout(() => { document.body.style.background = "#111"; }, 150);
@@ -280,7 +279,6 @@ function updateLastChangeDisplay() {
   }
   lastEl.textContent = (lastChange > 0 ? "+" : "") + lastChange;
   lastEl.style.color = lastChange > 0 ? "#4caf50" : "#f44336";
-  lastEl.style.fontWeight = "bold";
 }
 
 function undo() {
