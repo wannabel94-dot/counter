@@ -1,8 +1,11 @@
 {
-  "name": "NFC Cash Counter",
-  "short_name": "Cash Counter",
-  "start_url": "./",
+  "background_color": "#ffffff",
+  "dir": "ltr",
   "display": "standalone",
-  "background_color": "#111",
-  "theme_color": "#111"
+  "name": "wannabel94-dot.github",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "wannabel94-dot.github",
+  "start_url": "https://wannabel94-dot.github.io/counter/?action=add",
+  "theme_color": "#ffffff"
 }
