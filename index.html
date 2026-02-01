@@ -3,440 +3,193 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+
 <title>Contador NFC</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a2a">
 
 <style>
 * { box-sizing: border-box; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2a 50%, #0a0a0a 100%);
-  color: #fff;
   margin: 0;
   padding: 20px;
-  text-align: center;
   min-height: 100vh;
+  background: #1a1a2a;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+  text-align: center;
 }
 
-/* BALANCE SECTION */
+/* ===== BALANCE ===== */
 #balanceWrapper {
-  margin: 20px auto 15px;
-  display: inline-block;
-  text-align: center;
-  padding: 32px 48px;
-  background: rgba(26,26,26,0.7);
+  margin: 20px auto;
+  padding: 28px 40px;
+  background: rgba(20,20,30,0.7);
   border-radius: 24px;
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 
-    0 8px 32px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0,0,0,.5);
 }
 
 #balanceLabel {
-  display: block;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #888;
-  margin-bottom: 12px;
-  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: #999;
   letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: block;
 }
 
 #total {
-  font-size: 3.5rem;
-  font-weight: 700;
-  letter-spacing: -2px;
-  background: linear-gradient(135deg, #e8f5e9 0%, #66bb6a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 0 40px rgba(102,187,106,0.3);
+  font-size: 3.2rem;
+  font-weight: 600;
+  color: #eee;
 }
 
-/* LAST CHANGE */
+/* ===== LAST CHANGE ===== */
 #lastChange {
-  font-size: 4rem;
-  margin-bottom: 15px;
+  font-size: 3.6rem;
   font-weight: 700;
+  margin-bottom: 10px;
   opacity: 0;
-  letter-spacing: -2px;
-  text-shadow: 0 0 30px currentColor;
 }
 
 @keyframes flash {
-  0% { opacity: 1; transform: scale(1) translateY(0); }
-  50% { opacity: 0.7; transform: scale(1.4) translateY(-8px); }
-  100% { opacity: 0; transform: scale(1) translateY(0); }
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: .8; transform: scale(1.35); }
+  100% { opacity: 0; transform: scale(1); }
 }
 
-/* ACTION BUTTONS */
+/* ===== ACTIONS ===== */
 .actions {
-  margin: 20px 0 30px;
-  display: flex;
-  justify-content: center;
-  gap: 16px;
+  margin: 25px 0;
 }
 
 button {
-  cursor: pointer;
   border: none;
-  border-radius: 20px;
-  font-size: 1.05rem;
-  padding: 16px 32px;
+  border-radius: 18px;
+  padding: 14px 30px;
+  font-size: 1rem;
   font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all .15s ease;
 }
 
-button::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-button:active::before {
-  width: 300px;
-  height: 300px;
-}
-
-button:active { transform: scale(0.97); }
+button:active { transform: scale(.96); }
 
 button.undo {
-  background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
-  color: #fff;
-  box-shadow: 
-    0 6px 20px rgba(244,67,54,0.4),
-    0 2px 8px rgba(0,0,0,0.3);
+  background: #2a0000;
+  color: #ef5350;
+  box-shadow: 0 0 20px rgba(244,67,54,.4);
 }
 
-button.undo:hover {
-  box-shadow: 
-    0 8px 30px rgba(244,67,54,0.6),
-    0 4px 12px rgba(0,0,0,0.3);
-  transform: translateY(-3px);
+/* ===== TABLE ===== */
+table {
+  width: 95%;
+  max-width: 620px;
+  margin: 25px auto;
+  border-collapse: collapse;
+  background: rgba(20,20,30,.6);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
-/* MODAL */
+th, td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+th {
+  font-size: .75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #aaa;
+  background: rgba(30,30,40,.9);
+}
+
+td.add { color: #66bb6a; font-weight: 600; }
+td.sub { color: #ef5350; font-weight: 600; }
+
+/* ===== MODAL ===== */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.94);
-  backdrop-filter: blur(12px);
+  background: rgba(0,0,0,.95);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
 }
 
 .modal.active { display: flex; }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* PANEL */
+/* ===== PANEL ===== */
 .panel {
-  width: 340px;
-  padding: 32px;
-  border-radius: 32px;
-  background: rgba(20,20,20,0.98);
-  border: 1px solid rgba(255,255,255,0.12);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(20px);
-  animation: slideUp 0.3s ease;
+  width: 320px;
+  padding: 26px;
+  border-radius: 28px;
+  background: #141414;
 }
 
-@keyframes slideUp {
-  from { 
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
+.panel.add { box-shadow: 0 0 60px rgba(76,175,80,.5); }
+.panel.sub { box-shadow: 0 0 60px rgba(244,67,54,.5); }
 
-/* GLOWS */
-.panel.add {
-  box-shadow: 
-    0 0 50px rgba(76,175,80,0.5),
-    0 0 120px rgba(76,175,80,0.25),
-    0 24px 80px rgba(0,0,0,0.6);
-  border-color: rgba(76,175,80,0.2);
-}
-
-.panel.sub {
-  box-shadow: 
-    0 0 50px rgba(244,67,54,0.5),
-    0 0 120px rgba(244,67,54,0.25),
-    0 24px 80px rgba(0,0,0,0.6);
-  border-color: rgba(244,67,54,0.2);
-}
-
-/* DISPLAY */
+/* ===== DISPLAY ===== */
 .display {
   display: flex;
   align-items: center;
-  font-size: 3rem;
-  padding: 20px 24px;
-  border-radius: 20px;
-  margin-bottom: 24px;
+  font-size: 2.8rem;
   font-weight: 700;
-  letter-spacing: -1.5px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  padding: 16px;
+  border-radius: 18px;
+  margin-bottom: 20px;
 }
 
-.display .prefix { 
-  margin-right: auto;
-  font-size: 2.5rem;
-}
+.display .prefix { margin-right: auto; }
 
 .display.add {
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-  color: #1b5e20;
-  box-shadow: 
-    inset 0 2px 12px rgba(76,175,80,0.25),
-    0 6px 20px rgba(76,175,80,0.2);
+  background: #0e2a15;
+  color: #66bb6a;
 }
 
 .display.sub {
-  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-  color: #b71c1c;
-  box-shadow: 
-    inset 0 2px 12px rgba(244,67,54,0.25),
-    0 6px 20px rgba(244,67,54,0.2);
+  background: #2a0e0e;
+  color: #ef5350;
 }
 
-/* KEYS */
+/* ===== KEYS ===== */
 .keys {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  gap: 12px;
 }
 
 .keys button {
-  font-size: 1.6rem;
-  padding: 20px;
-  border-radius: 16px;
-  font-weight: 600;
-  transition: all 0.15s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  padding: 18px;
+  font-size: 1.5rem;
+  border-radius: 14px;
+  background: #1f1f1f;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.6);
 }
 
-.keys button:hover {
-  transform: translateY(-2px);
-}
+/* ADD MODE TEXT */
+.panel.add .keys button { color: #66bb6a; }
+.panel.add .keys button:hover { color: #81c784; }
 
-.panel.add .keys button {
-  background: linear-gradient(135deg, #2a2a3a 0%, #323242 100%);
-  color: #e8f5e9;
-  box-shadow: 
-    0 3px 12px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,255,255,0.05);
-  border: 1px solid rgba(76,175,80,0.15);
-}
+/* SUB MODE TEXT */
+.panel.sub .keys button { color: #ef5350; }
+.panel.sub .keys button:hover { color: #e57373; }
 
-.panel.add .keys button:hover {
-  background: linear-gradient(135deg, #323242 0%, #3a3a4a 100%);
-  box-shadow: 
-    0 5px 18px rgba(76,175,80,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.08);
-  border-color: rgba(76,175,80,0.25);
-}
+.ok { grid-column: span 2; font-weight: 700; }
 
-.panel.add .keys button.clear { 
-  background: linear-gradient(135deg, #3a3a4a 0%, #424252 100%);
-  border-color: rgba(76,175,80,0.2);
-}
-
-.panel.add .ok { 
-  background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%);
-  color: #1b5e20;
-  box-shadow: 0 6px 20px rgba(76,175,80,0.4);
-  font-size: 1.4rem;
-  border: none;
-}
-
-.panel.add .ok:hover {
-  box-shadow: 0 8px 28px rgba(76,175,80,0.5);
-}
-
-.panel.sub .keys button {
-  background: linear-gradient(135deg, #2a2a3a 0%, #323242 100%);
-  color: #ffcdd2;
-  box-shadow: 
-    0 3px 12px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,255,255,0.05);
-  border: 1px solid rgba(244,67,54,0.15);
-}
-
-.panel.sub .keys button:hover {
-  background: linear-gradient(135deg, #323242 0%, #3a3a4a 100%);
-  box-shadow: 
-    0 5px 18px rgba(244,67,54,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.08);
-  border-color: rgba(244,67,54,0.25);
-}
-
-.panel.sub .keys button.clear { 
-  background: linear-gradient(135deg, #3a3a4a 0%, #424252 100%);
-  border: 1px solid rgba(244,67,54,0.2);
-}
-
-.panel.sub .ok { 
-  background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
-  color: #fff;
-  box-shadow: 0 6px 20px rgba(244,67,54,0.4);
-  font-size: 1.4rem;
-  border: none;
-}
-
-.panel.sub .ok:hover {
-  box-shadow: 0 8px 28px rgba(244,67,54,0.5);
-}
-
-.ok { 
-  grid-column: span 2;
-  font-weight: 700;
-}
-
-/* TABLE */
-table {
-  margin: 20px auto 40px;
-  border-collapse: separate;
-  border-spacing: 0;
-  width: 95%;
-  max-width: 650px;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 
-    0 12px 40px rgba(0,0,0,0.5),
-    0 0 0 1px rgba(255,255,255,0.06);
-  background: rgba(20,20,20,0.7);
-  backdrop-filter: blur(12px);
-  table-layout: fixed;
-}
-
-th, td {
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-th { 
-  background: rgba(30,30,30,0.9);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 1.5px;
-  color: #888;
-  padding: 18px 20px;
-}
-
-th:first-child,
-td:first-child {
-  width: 33.33%;
-  white-space: nowrap;
-}
-
-th:nth-child(2),
-td:nth-child(2) {
-  width: 33.33%;
-}
-
-th:nth-child(3),
-td:nth-child(3) {
-  width: 33.33%;
-}
-
-td {
-  font-size: 0.95rem;
-  color: #ccc;
-}
-
-td.add { 
-  color: #66bb6a;
-  font-weight: 700;
-  font-size: 1rem;
-}
-
-td.sub { 
-  color: #ef5350;
-  font-weight: 700;
-  font-size: 1rem;
-}
-
-tbody tr {
-  transition: all 0.2s ease;
-}
-
-tbody tr:hover { 
-  background: rgba(255,255,255,0.04);
-  transform: scale(1.005);
-}
-
-tbody tr:last-child td { 
-  border-bottom: none;
-}
-
-/* Responsive */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 480px) {
-  .panel { 
-    width: 92%;
-    max-width: 340px;
-    padding: 24px;
-  }
-  
-  #total { 
-    font-size: 2.8rem;
-  }
-  
-  #lastChange { 
-    font-size: 3rem;
-  }
-  
-  #balanceLabel { 
-    font-size: 0.85rem;
-  }
-  
-  #balanceWrapper {
-    padding: 24px 36px;
-  }
-  
-  .display {
-    font-size: 2.5rem;
-  }
-  
-  .keys button {
-    font-size: 1.4rem;
-    padding: 16px;
-  }
-  
-  th, td {
-    padding: 12px 8px;
-    font-size: 0.85rem;
-  }
-  
-  th {
-    font-size: 0.7rem;
-    padding: 14px 8px;
-  }
+  #total { font-size: 2.6rem; }
+  #lastChange { font-size: 3rem; }
 }
 </style>
 </head>
+
 <body>
 
 <div id="lastChange"></div>
@@ -461,13 +214,14 @@ tbody tr:last-child td {
   <tbody id="logBody"></tbody>
 </table>
 
-<!-- CALCULATOR MODAL -->
+<!-- CALCULATOR -->
 <div class="modal" id="modal">
   <div class="panel add" id="panel">
     <div class="display add" id="display">
       <span class="prefix">+</span>
       <span id="displayValue">0</span>
     </div>
+
     <div class="keys">
       <button onclick="press(1)">1</button>
       <button onclick="press(2)">2</button>
@@ -479,7 +233,7 @@ tbody tr:last-child td {
       <button onclick="press(8)">8</button>
       <button onclick="press(9)">9</button>
       <button onclick="press(0)">0</button>
-      <button class="clear" onclick="clearInput()">C</button>
+      <button onclick="clearInput()">C</button>
       <button class="ok" onclick="confirm()">OK</button>
     </div>
   </div>
@@ -494,18 +248,23 @@ let log = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
 let input = "";
 let mode = "add";
 
-document.getElementById("total").textContent = "€" + total;
+const totalEl = document.getElementById("total");
+
+totalEl.textContent = "€" + total;
 renderLog();
 
 const params = new URLSearchParams(location.search);
-if (params.get("action")) { mode = params.get("action"); openModal(); }
+if (params.get("action")) {
+  mode = params.get("action");
+  openModal();
+}
 
 function openModal() {
   input = "";
   updateDisplay();
-  document.getElementById("panel").className = "panel " + mode;
-  document.getElementById("display").className = "display " + mode;
-  document.getElementById("modal").classList.add("active");
+  panel.className = "panel " + mode;
+  display.className = "display " + mode;
+  modal.classList.add("active");
 }
 
 function press(n){ input += n; updateDisplay(); }
@@ -513,7 +272,7 @@ function clearInput(){ input = ""; updateDisplay(); }
 
 function updateDisplay(){
   document.querySelector(".prefix").textContent = mode === "add" ? "+" : "-";
-  document.getElementById("displayValue").textContent = input || "0";
+  displayValue.textContent = input || "0";
 }
 
 function confirm(){
@@ -521,7 +280,7 @@ function confirm(){
   if(!amount) return;
 
   const delta = mode === "add" ? amount : -amount;
-  if(total + delta < 0){ alert("El balance no puede ser menor que 0"); return; }
+  if(total + delta < 0) return alert("El balance no puede ser menor que 0");
 
   total += delta;
   localStorage.setItem(TOTAL_KEY, total);
@@ -535,30 +294,28 @@ function confirm(){
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
 
   animateChange(delta);
+  totalEl.textContent = "€" + total;
   renderLog();
-  document.getElementById("total").textContent = "€" + total;
-  document.getElementById("modal").classList.remove("active");
+  modal.classList.remove("active");
 }
 
 function animateChange(delta){
-  const el = document.getElementById("lastChange");
-  el.textContent = (delta > 0 ? "+" : "") + delta;
-  el.style.color = delta > 0 ? "#4caf50" : "#f44336";
-  el.style.animation = "none";
-  el.offsetHeight;
-  el.style.animation = "flash 1.8s forwards"; 
+  lastChange.textContent = (delta>0?"+":"") + delta;
+  lastChange.style.color = delta>0 ? "#66bb6a" : "#ef5350";
+  lastChange.style.animation = "none";
+  lastChange.offsetHeight;
+  lastChange.style.animation = "flash 1.5s forwards";
 }
 
 function renderLog(){
-  const body = document.getElementById("logBody");
-  body.innerHTML = "";
+  logBody.innerHTML = "";
   log.forEach(t=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${t.time}</td>
-      <td class="${t.delta>0?"add":"sub"}">${t.delta>0?"+":""}${t.delta}</td>
-      <td>${t.total}</td>`;
-    body.appendChild(tr);
+    logBody.innerHTML += `
+      <tr>
+        <td>${t.time}</td>
+        <td class="${t.delta>0?"add":"sub"}">${t.delta>0?"+":""}${t.delta}</td>
+        <td>${t.total}</td>
+      </tr>`;
   });
 }
 
@@ -566,10 +323,10 @@ function undo(){
   if(!log.length) return;
   const last = log.shift();
   total -= last.delta;
-  if(total<0) total = 0;
+  if(total < 0) total = 0;
   localStorage.setItem(TOTAL_KEY, total);
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
-  document.getElementById("total").textContent = "€" + total;
+  totalEl.textContent = "€" + total;
   renderLog();
 }
 </script>
