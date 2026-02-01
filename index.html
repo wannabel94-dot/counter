@@ -326,21 +326,31 @@ function undo(){
   renderLog();
 }
 
-  function reset() {
-  const ok = confirm("Are you sure you want to reset the balance to 0?\nThis will clear all transactions.");
+function reset() {
+  const ok = confirm(
+    "Are you sure you want to reset the balance to 0?\nThis will clear all transactions."
+  );
   if (!ok) return;
 
+  // reset data
   total = 0;
   log = [];
 
   localStorage.setItem(TOTAL_KEY, total);
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
 
+  // update UI
   document.getElementById("total").textContent = total;
   document.getElementById("lastChange").style.opacity = 0;
-
   renderLog();
+
+  // close calculator if open
+  document.getElementById("modal").classList.remove("active");
+
+  // IMPORTANT: remove ?action=add / sub from URL
+  history.replaceState(null, "", location.pathname);
 }
+
 </script>
 
 </body>
