@@ -19,15 +19,15 @@ body {
 }
 
 h2 { font-size: 1.8rem; margin-bottom: 10px; }
+
 #lastChange {
-  font-size: 2.5rem;  /* bigger */
+  font-size: 2.5rem;
   margin-bottom: 15px;
   font-weight: bold;
   opacity: 0;
   transition: opacity 0.5s ease;
 }
 
-/* Flash animation for last transaction */
 @keyframes flash {
   0% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(1.3); }
@@ -59,8 +59,7 @@ button.reset, button.undo {
   padding: 20px;
   border-radius: 16px;
   width: 280px;
-  transition: box-shadow 0.2s ease;
-  background-color: rgba(20,20,20,0.95); /* opaque so table behind is hidden */
+  background-color: rgba(20,20,20,0.95);
 }
 
 /* Display */
@@ -75,7 +74,11 @@ button.reset, button.undo {
   justify-content: flex-end;
 }
 
-.display span.prefix { margin-right: auto; font-size: 2.2rem; font-weight: bold; }
+.display span.prefix {
+  margin-right: auto;
+  font-size: 2.2rem;
+}
+
 .display.add { background: #dfffdc; color: #0b3d1c; }
 .display.sub { background: #ffdcdc; color: #8a1c1c; }
 
@@ -92,9 +95,7 @@ button.reset, button.undo {
   border-radius: 10px;
   background: #1b5e20;
   color: #e8f5e9;
-  transition: background 0.15s ease, transform 0.05s ease;
 }
-.keys button:active { transform: scale(0.96); }
 
 .ok { grid-column: span 2; font-weight: bold; }
 .ok.add { background: #4caf50; color: #000; }
@@ -117,8 +118,6 @@ th, td {
   text-align: center;
 }
 th { background-color: #222; }
-tr.add { background-color: rgba(76,175,80,0.2); }
-tr.sub { background-color: rgba(244,67,54,0.2); }
 </style>
 </head>
 
@@ -130,7 +129,6 @@ tr.sub { background-color: rgba(244,67,54,0.2); }
 <button class="undo" onclick="undo()">Undo</button>
 <button class="reset" onclick="reset()">Reset</button>
 
-<!-- Transaction log table -->
 <table id="logTable">
   <thead>
     <tr>
@@ -139,12 +137,9 @@ tr.sub { background-color: rgba(244,67,54,0.2); }
       <th>Total</th>
     </tr>
   </thead>
-  <tbody>
-    <!-- Filled dynamically -->
-  </tbody>
+  <tbody></tbody>
 </table>
 
-<!-- Calculator Modal -->
 <div class="modal" id="modal">
   <div class="panel" id="panel">
     <div class="display" id="display">
@@ -177,150 +172,131 @@ const LOG_KEY = "transaction_log";
 let input = "";
 let mode = "add";
 
-// Load total
 let total = Number(localStorage.getItem(TOTAL_KEY) || 0);
 document.getElementById("total").textContent = total;
 
-// Load last change
-let lastChange = Number(localStorage.getItem(LAST_CHANGE_KEY) || 0);
-
-// Load transaction log
 let transactionLog = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
 updateLogTable();
 
-// NFC action
 const params = new URLSearchParams(location.search);
 const action = params.get("action");
 const now = Date.now();
 const last = Number(localStorage.getItem(LAST_SCAN) || 0);
 
-if(action && now - last > 1500){
+if (action && now - last > 1500) {
   localStorage.setItem(LAST_SCAN, now);
   mode = action;
   openModal();
 }
 
-function openModal(){
-  input="";
+function openModal() {
+  input = "";
   updateDisplay();
-  const modal = document.getElementById("modal");
+  document.getElementById("modal").classList.add("active");
+}
+
+function press(n) {
+  input += n;
+  updateDisplay();
+}
+
+function clearInput() {
+  input = "";
+  updateDisplay();
+}
+
+function updateDisplay() {
   const display = document.getElementById("display");
-  const okButton = document.getElementById("okButton");
-  const panel = document.getElementById("panel");
-
-  modal.classList.add("active");
-
-  if(mode==="add"){
-    display.classList.add("add"); display.classList.remove("sub");
-    okButton.classList.add("add"); okButton.classList.remove("sub");
-    panel.classList.add("add"); panel.classList.remove("sub");
-    panel.style.boxShadow="0 0 60px rgba(76,175,80,0.8)";
-  } else {
-    display.classList.add("sub"); display.classList.remove("add");
-    okButton.classList.add("sub"); okButton.classList.remove("add");
-    panel.classList.add("sub"); panel.classList.remove("add");
-    panel.style.boxShadow="0 0 60px rgba(244,67,54,0.8)";
-  }
+  display.className = "display " + mode;
+  display.querySelector(".prefix").textContent = mode === "add" ? "+" : "-";
+  display.querySelector(".value").textContent = input || "0";
 }
 
-function press(n){ input+=n; updateDisplay(); }
-function clearInput(){ input=""; updateDisplay(); }
-function updateDisplay(){
-  const display=document.getElementById("display");
-  const prefixSpan=display.querySelector(".prefix");
-  const valueSpan=display.querySelector(".value");
-  prefixSpan.textContent=mode==="add"?"+":"-";
-  valueSpan.textContent=input||"0";
+function formatDate(d) {
+  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getFullYear()).slice(-2)} - ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
 }
 
-function formatDate(date){
-  const d = date.getDate().toString().padStart(2,'0');
-  const m = (date.getMonth()+1).toString().padStart(2,'0');
-  const y = date.getFullYear().toString().slice(-2);
-  const h = date.getHours().toString().padStart(2,'0');
-  const min = date.getMinutes().toString().padStart(2,'0');
-  return `${d}/${m}/${y} - ${h}:${min}`;
-}
+function confirmAmount() {
+  const amount = Number(input || 0);
+  if (!amount) return;
 
-function confirmAmount(){
-  let amount = Number(input||0);
-  if(!amount) return;
-
-  let delta = mode==="add"? amount : -amount;
-
-  // Prevent negative total entirely
-  if(total + delta < 0){
-    alert("Cannot subtract more than current total!");
-    document.getElementById("modal").classList.remove("active");
+  const delta = mode === "add" ? amount : -amount;
+  if (total + delta < 0) {
+    alert("Cannot subtract more than current total");
+    closeModal();
     return;
   }
 
   total += delta;
-  localStorage.setItem(TOTAL_KEY,total);
+  localStorage.setItem(TOTAL_KEY, total);
   localStorage.setItem(LAST_CHANGE_KEY, delta);
-  lastChange = delta;
+
+  transactionLog.unshift({ delta, total, time: formatDate(new Date()) });
+  localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
 
   document.getElementById("total").textContent = total;
   showLastChange(delta);
-
-  // Add to log with timestamp, newest first
-  transactionLog.unshift({delta, total, time: formatDate(new Date())});
-  localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
   updateLogTable();
-
-  document.getElementById("modal").classList.remove("active");
+  closeModal();
 }
 
-function showLastChange(delta){
-  const lastEl=document.getElementById("lastChange");
-  lastEl.textContent = (delta>0?"+":"") + delta;
-  lastEl.style.color = delta>0?"#4caf50":"#f44336";
-  lastEl.style.opacity=1;
-  lastEl.style.animation="flash 2s forwards";  // longer duration
-  setTimeout(()=>{ lastEl.style.opacity=0; },2000);
+function showLastChange(delta) {
+  const el = document.getElementById("lastChange");
+  el.textContent = (delta > 0 ? "+" : "") + delta;
+  el.style.color = delta > 0 ? "#4caf50" : "#f44336";
+  el.style.opacity = 1;
+  el.style.animation = "flash 2s forwards";
+  setTimeout(() => el.style.opacity = 0, 2000);
 }
 
-function undo(){
-  const last = Number(localStorage.getItem(LAST_CHANGE_KEY)||0);
-  if(!last) return;
+function undo() {
+  const last = Number(localStorage.getItem(LAST_CHANGE_KEY) || 0);
+  if (!last) return;
 
   total -= last;
-  if(total<0) total=0;
-  localStorage.setItem(TOTAL_KEY,total);
-  document.getElementById("total").textContent=total;
+  localStorage.setItem(TOTAL_KEY, total);
+  document.getElementById("total").textContent = total;
 
-  lastChange=0;
-  localStorage.removeItem(LAST_CHANGE_KEY);
-  document.getElementById("lastChange").style.opacity=0;
-
-  if(transactionLog.length>0) transactionLog.shift();
+  transactionLog.shift();
   localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
+  localStorage.removeItem(LAST_CHANGE_KEY);
   updateLogTable();
 }
 
-function reset(){
-  if(!confirm("Reset total?")) return;
+function reset() {
+  if (!confirm("Reset total?")) return;
   localStorage.clear();
-  transactionLog=[];
   location.reload();
 }
 
-function updateLogTable(){
-  const tbody = document.getElementById("logTable").querySelector("tbody");
-  tbody.innerHTML="";
-  transactionLog.forEach((t)=>{
-    const tr=document.createElement("tr");
-    tr.className = t.delta>0 ? "add" : "sub";  // whole row color
-    const tdTime=document.createElement("td"); tdTime.textContent = t.time;
-    const tdDelta=document.createElement("td"); tdDelta.textContent=(t.delta>0?"+":"") + t.delta;
-    const tdTotal=document.createElement("td"); tdTotal.textContent = t.total;
-    tr.appendChild(tdTime); tr.appendChild(tdDelta); tr.appendChild(tdTotal);
+function updateLogTable() {
+  const tbody = document.querySelector("#logTable tbody");
+  tbody.innerHTML = "";
+
+  transactionLog.forEach(t => {
+    const tr = document.createElement("tr");
+
+    const tdTime = document.createElement("td");
+    tdTime.textContent = t.time;
+
+    const tdDelta = document.createElement("td");
+    tdDelta.textContent = (t.delta > 0 ? "+" : "") + t.delta;
+    tdDelta.style.color = t.delta > 0 ? "#4caf50" : "#f44336";
+    tdDelta.style.fontWeight = "bold";
+
+    const tdTotal = document.createElement("td");
+    tdTotal.textContent = t.total;
+
+    tr.append(tdTime, tdDelta, tdTotal);
     tbody.appendChild(tr);
   });
 }
 
-// Optional: PWA Service Worker
-if("serviceWorker" in navigator){
+function closeModal() {
+  document.getElementById("modal").classList.remove("active");
+}
+
+if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
 </script>
