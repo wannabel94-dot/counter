@@ -320,6 +320,7 @@ table {
     0 0 0 1px rgba(255,255,255,0.06);
   background: rgba(20,20,20,0.7);
   backdrop-filter: blur(12px);
+  table-layout: auto;
 }
 
 th, td {
@@ -335,6 +336,12 @@ th {
   letter-spacing: 1.5px;
   color: #888;
   padding: 18px 20px;
+}
+
+th:first-child,
+td:first-child {
+  width: 1%;
+  white-space: nowrap;
 }
 
 td {
@@ -398,6 +405,16 @@ tbody tr:last-child td {
   .keys button {
     font-size: 1.4rem;
     padding: 16px;
+  }
+  
+  th, td {
+    padding: 12px 8px;
+    font-size: 0.85rem;
+  }
+  
+  th {
+    font-size: 0.7rem;
+    padding: 14px 8px;
   }
 }
 </style>
