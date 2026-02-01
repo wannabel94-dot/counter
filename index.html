@@ -16,7 +16,7 @@
 
 /* ===== BODY ===== */
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: system-ui, Roboto, Arial, sans-serif;
   background: #1a1a2a;
   color: #fff;
   margin: 0;
@@ -45,7 +45,7 @@ body {
 #balanceWrapper {
   margin: 20px auto 15px;
   display: inline-block;
-  padding: 20px 32px; /* reduced padding */
+  padding: 24px 42px; /* slightly wider */
   background: rgba(26,26,42,0.85);
   border-radius: 24px;
   border: 1px solid rgba(255,255,255,0.06);
@@ -91,7 +91,7 @@ button {
   transition: all 0.2s ease;
 }
 
-/* Undo button */
+/* Undo */
 button.undo {
   background: linear-gradient(135deg, #e53935, #ef5350);
   color: #fff;
@@ -138,6 +138,11 @@ td {
   color: #ccc;
 }
 
+/* Date + time on one line */
+td:first-child {
+  white-space: nowrap;
+}
+
 td.add {
   color: #66bb6a;
   font-weight: 700;
@@ -156,7 +161,7 @@ tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* ===== MODAL BACKDROP ===== */
+/* ===== MODAL ===== */
 .modal {
   position: fixed;
   inset: 0;
@@ -206,13 +211,8 @@ tbody tr:last-child td {
   font-size: 2.5rem;
 }
 
-.panel.add .display {
-  color: #66bb6a;
-}
-
-.panel.sub .display {
-  color: #ef5350;
-}
+.panel.add .display { color: #66bb6a; }
+.panel.sub .display { color: #ef5350; }
 
 /* ===== KEYS ===== */
 .keys {
@@ -223,7 +223,6 @@ tbody tr:last-child td {
 
 .keys button {
   background: rgba(20,20,35,0.95);
-  color: #ccc;
   font-size: 1.6rem;
   padding: 20px;
   border-radius: 16px;
@@ -234,40 +233,34 @@ tbody tr:last-child td {
     inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
+.panel.add .keys button { color: #66bb6a; }
+.panel.sub .keys button { color: #ef5350; }
+
 .keys button:active {
   transform: scale(0.96);
 }
 
-/* Add mode text */
-.panel.add .keys button {
-  color: #66bb6a;
-}
-
-/* Sub mode text */
-.panel.sub .keys button {
-  color: #ef5350;
-}
-
-/* Clear */
 .keys button.clear {
   color: #aaa;
 }
 
-/* OK */
+/* OK button */
 .ok {
-  grid-column: span 2;
-  font-weight: 700;
+  grid-column: span 3; /* full width */
   font-size: 1.4rem;
+  font-weight: 700;
 }
 
 .panel.add .ok {
-  background: linear-gradient(135deg, #66bb6a, #81c784);
-  color: #1b5e20;
+  background: rgba(20,20,35,0.95);
+  color: #66bb6a;
+  border: 1px solid rgba(102,187,106,0.4);
 }
 
 .panel.sub .ok {
-  background: linear-gradient(135deg, #ef5350, #e57373);
-  color: #4a0000;
+  background: rgba(20,20,35,0.95);
+  color: #ef5350;
+  border: 1px solid rgba(239,83,80,0.4);
 }
 
 /* ===== RESPONSIVE ===== */
@@ -276,6 +269,7 @@ tbody tr:last-child td {
   #lastChange { font-size: 3rem; }
   .panel { width: 92%; padding: 24px; }
 }
+
 </style>
 </head>
 
