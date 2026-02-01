@@ -42,17 +42,14 @@ h2 {
   100% { opacity: 0; transform: scale(1) translateY(0); }
 }
 
-/* TOTAL BALANCE */
+/* BALANCE */
 #balanceWrapper {
-  font-size: 3.5rem;
+  font-size: 2.8rem;
   font-weight: 700;
-  letter-spacing: -1px;
   margin-bottom: 20px;
 }
 
-#balanceWrapper span {
-  display: inline-block;
-}
+#balanceWrapper span { display: inline-block; }
 
 /* ACTION BUTTONS */
 .actions {
@@ -84,17 +81,6 @@ button.undo {
 
 button.undo:hover {
   box-shadow: 0 6px 25px rgba(244,67,54,0.6);
-  transform: translateY(-2px);
-}
-
-button.reset {
-  background: linear-gradient(135deg, #424242 0%, #303030 100%);
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-}
-
-button.reset:hover {
-  box-shadow: 0 6px 25px rgba(0,0,0,0.5);
   transform: translateY(-2px);
 }
 
@@ -140,7 +126,7 @@ button.reset:hover {
 .display {
   display: flex;
   align-items: center;
-  font-size: 2.8rem;
+  font-size: 2.5rem;
   padding: 18px 20px;
   border-radius: 16px;
   margin-bottom: 20px;
@@ -244,7 +230,7 @@ tbody tr:last-child td { border-bottom: none; }
 
 @media (max-width: 480px) {
   .panel { width: 90%; max-width: 320px; }
-  #balanceWrapper { font-size: 3rem; }
+  #balanceWrapper { font-size: 2.5rem; }
   #lastChange { font-size: 2.8rem; }
 }
 </style>
@@ -256,7 +242,6 @@ tbody tr:last-child td { border-bottom: none; }
 
 <div class="actions">
   <button class="undo" onclick="undo()">Deshacer</button>
-  <button class="reset" onclick="reset()">Reiniciar</button>
 </div>
 
 <table>
@@ -379,17 +364,6 @@ function undo(){
   localStorage.setItem(TOTAL_KEY, total);
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
   document.getElementById("total").textContent = "€" + total;
-  renderLog();
-}
-
-function reset(){
-  if(!confirm("¿Está seguro que desea reiniciar el balance a 0?\nEsto borrará todas las transacciones.")) return;
-  total = 0;
-  log = [];
-  localStorage.setItem(TOTAL_KEY, total);
-  localStorage.setItem(LOG_KEY, JSON.stringify(log));
-  document.getElementById("total").textContent = "€" + total;
-  document.getElementById("lastChange").style.opacity = 0;
   renderLog();
 }
 </script>
