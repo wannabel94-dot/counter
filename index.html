@@ -20,104 +20,162 @@ body {
 
 h2 { font-size: 1.8rem; margin-bottom: 10px; }
 
+/* Last transaction animation */
 #lastChange {
-  font-size: 2.5rem;
+  font-size: 3rem;
   margin-bottom: 15px;
   font-weight: bold;
   opacity: 0;
-  transition: opacity 0.5s ease;
 }
 
 @keyframes flash {
   0% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.3); }
+  50% { opacity: 0.7; transform: scale(1.35); }
   100% { opacity: 0; transform: scale(1); }
 }
 
-button { cursor: pointer; }
-button.reset, button.undo {
-  margin: 5px;
-  padding: 10px 20px;
-  font-size: 1rem;
+button {
+  cursor: pointer;
   border-radius: 10px;
   border: none;
 }
 
-/* Modal */
+button.reset, button.undo {
+  margin: 5px;
+  padding: 10px 20px;
+  font-size: 1rem;
+}
+
+/* MODAL */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.85);
+  background: rgba(0,0,0,.9);
   display: none;
   align-items: center;
   justify-content: center;
 }
 .modal.active { display: flex; }
 
-/* Calculator panel */
+/* CALCULATOR PANEL */
 .panel {
-  padding: 20px;
-  border-radius: 16px;
   width: 280px;
-  background-color: rgba(20,20,20,0.95);
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(20,20,20,0.97);
+  transition: box-shadow 0.25s ease;
 }
 
-/* Display */
+/* GLOWS */
+.panel.add {
+  box-shadow:
+    0 0 30px rgba(76,175,80,0.8),
+    0 0 80px rgba(76,175,80,0.5);
+}
+
+.panel.sub {
+  box-shadow:
+    0 0 30px rgba(244,67,54,0.85),
+    0 0 80px rgba(244,67,54,0.5);
+}
+
+/* DISPLAY */
 .display {
-  font-size: 2.2rem;
-  padding: 12px;
-  margin-bottom: 12px;
-  border-radius: 8px;
-  font-weight: bold;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  font-size: 2.3rem;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-weight: bold;
+  transition: box-shadow 0.2s ease;
 }
 
-.display span.prefix {
-  margin-right: auto;
-  font-size: 2.2rem;
+.display .prefix { margin-right: auto; }
+
+/* Display themes + glow */
+.display.add {
+  background: #e6ffe6;
+  color: #0b3d1c;
+  box-shadow: inset 0 0 10px rgba(76,175,80,0.6);
 }
 
-.display.add { background: #dfffdc; color: #0b3d1c; }
-.display.sub { background: #ffdcdc; color: #8a1c1c; }
+.display.sub {
+  background: #ffe6e6;
+  color: #8a1c1c;
+  box-shadow: inset 0 0 10px rgba(244,67,54,0.6);
+}
 
+/* KEYS GRID */
 .keys {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
-.keys button {
-  font-size: 1.4rem;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
+/* ADD MODE */
+.panel.add .keys button {
   background: #1b5e20;
   color: #e8f5e9;
 }
 
-.ok { grid-column: span 2; font-weight: bold; }
-.ok.add { background: #4caf50; color: #000; }
-.ok.sub { background: #f44336; color: #000; }
+.panel.add .keys button.clear {
+  background: #2e7d32;
+}
 
-.clear { background: #2e7d32; color: #fff; }
-.panel.sub .keys button { background: #ef5350; color: #000; }
-.panel.sub .keys button.clear { background: #e53935; color: #fff; }
+.panel.add .ok {
+  background: #4caf50;
+  color: #000;
+}
 
-/* Transaction log table */
+/* SUB MODE */
+.panel.sub .keys button {
+  background: #ef5350;
+  color: #000;
+}
+
+.panel.sub .keys button.clear {
+  background: #e53935;
+  color: #fff;
+}
+
+.panel.sub .ok {
+  background: #f44336;
+  color: #000;
+}
+
+/* COMMON BUTTON STYLES */
+.keys button {
+  font-size: 1.4rem;
+  padding: 14px;
+}
+
+.keys button:active {
+  transform: scale(0.95);
+}
+
+.ok {
+  grid-column: span 2;
+  font-weight: bold;
+}
+
+/* TABLE */
 table {
   margin: 20px auto;
   border-collapse: collapse;
-  width: 90%;
-  max-width: 500px;
+  width: 95%;
+  max-width: 520px;
 }
+
 th, td {
-  border: 1px solid #fff;
-  padding: 8px 12px;
-  text-align: center;
+  border: 1px solid #444;
+  padding: 8px;
 }
-th { background-color: #222; }
+
+th { background: #222; }
+
+td.add { color: #4caf50; }
+td.sub { color: #f44336; }
 </style>
 </head>
 
@@ -129,7 +187,7 @@ th { background-color: #222; }
 <button class="undo" onclick="undo()">Undo</button>
 <button class="reset" onclick="reset()">Reset</button>
 
-<table id="logTable">
+<table>
   <thead>
     <tr>
       <th>Time</th>
@@ -137,14 +195,15 @@ th { background-color: #222; }
       <th>Total</th>
     </tr>
   </thead>
-  <tbody></tbody>
+  <tbody id="logBody"></tbody>
 </table>
 
+<!-- MODAL -->
 <div class="modal" id="modal">
-  <div class="panel" id="panel">
-    <div class="display" id="display">
+  <div class="panel add" id="panel">
+    <div class="display add" id="display">
       <span class="prefix">+</span>
-      <span class="value">0</span>
+      <span id="displayValue">0</span>
     </div>
     <div class="keys">
       <button onclick="press(1)">1</button>
@@ -158,40 +217,39 @@ th { background-color: #222; }
       <button onclick="press(9)">9</button>
       <button onclick="press(0)">0</button>
       <button class="clear" onclick="clearInput()">C</button>
-      <button class="ok add" id="okButton" onclick="confirmAmount()">OK</button>
+      <button class="ok" onclick="confirm()">OK</button>
     </div>
   </div>
 </div>
 
 <script>
-const TOTAL_KEY = "cash_total";
-const LAST_SCAN = "last_scan";
-const LAST_CHANGE_KEY = "last_change";
-const LOG_KEY = "transaction_log";
+const TOTAL_KEY = "total";
+const LOG_KEY = "log";
 
+let total = Number(localStorage.getItem(TOTAL_KEY)) || 0;
+let log = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
 let input = "";
 let mode = "add";
 
-let total = Number(localStorage.getItem(TOTAL_KEY) || 0);
 document.getElementById("total").textContent = total;
-
-let transactionLog = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
-updateLogTable();
+renderLog();
 
 const params = new URLSearchParams(location.search);
-const action = params.get("action");
-const now = Date.now();
-const last = Number(localStorage.getItem(LAST_SCAN) || 0);
-
-if (action && now - last > 1500) {
-  localStorage.setItem(LAST_SCAN, now);
-  mode = action;
+if (params.get("action")) {
+  mode = params.get("action");
   openModal();
 }
 
 function openModal() {
   input = "";
   updateDisplay();
+
+  const panel = document.getElementById("panel");
+  const display = document.getElementById("display");
+
+  panel.className = "panel " + mode;
+  display.className = "display " + mode;
+
   document.getElementById("modal").classList.add("active");
 }
 
@@ -206,98 +264,76 @@ function clearInput() {
 }
 
 function updateDisplay() {
-  const display = document.getElementById("display");
-  display.className = "display " + mode;
-  display.querySelector(".prefix").textContent = mode === "add" ? "+" : "-";
-  display.querySelector(".value").textContent = input || "0";
+  document.querySelector(".prefix").textContent = mode === "add" ? "+" : "-";
+  document.getElementById("displayValue").textContent = input || "0";
 }
 
-function formatDate(d) {
-  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getFullYear()).slice(-2)} - ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
-}
-
-function confirmAmount() {
-  const amount = Number(input || 0);
+function confirm() {
+  const amount = Number(input);
   if (!amount) return;
 
   const delta = mode === "add" ? amount : -amount;
   if (total + delta < 0) {
-    alert("Cannot subtract more than current total");
-    closeModal();
+    alert("Total cannot go below zero");
     return;
   }
 
   total += delta;
   localStorage.setItem(TOTAL_KEY, total);
-  localStorage.setItem(LAST_CHANGE_KEY, delta);
 
-  transactionLog.unshift({ delta, total, time: formatDate(new Date()) });
-  localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
-
-  document.getElementById("total").textContent = total;
-  showLastChange(delta);
-  updateLogTable();
-  closeModal();
-}
-
-function showLastChange(delta) {
-  const el = document.getElementById("lastChange");
-  el.textContent = (delta > 0 ? "+" : "") + delta;
-  el.style.color = delta > 0 ? "#4caf50" : "#f44336";
-  el.style.opacity = 1;
-  el.style.animation = "flash 2s forwards";
-  setTimeout(() => el.style.opacity = 0, 2000);
-}
-
-function undo() {
-  const last = Number(localStorage.getItem(LAST_CHANGE_KEY) || 0);
-  if (!last) return;
-
-  total -= last;
-  localStorage.setItem(TOTAL_KEY, total);
-  document.getElementById("total").textContent = total;
-
-  transactionLog.shift();
-  localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
-  localStorage.removeItem(LAST_CHANGE_KEY);
-  updateLogTable();
-}
-
-function reset() {
-  if (!confirm("Reset total?")) return;
-  localStorage.clear();
-  location.reload();
-}
-
-function updateLogTable() {
-  const tbody = document.querySelector("#logTable tbody");
-  tbody.innerHTML = "";
-
-  transactionLog.forEach(t => {
-    const tr = document.createElement("tr");
-
-    const tdTime = document.createElement("td");
-    tdTime.textContent = t.time;
-
-    const tdDelta = document.createElement("td");
-    tdDelta.textContent = (t.delta > 0 ? "+" : "") + t.delta;
-    tdDelta.style.color = t.delta > 0 ? "#4caf50" : "#f44336";
-    tdDelta.style.fontWeight = "bold";
-
-    const tdTotal = document.createElement("td");
-    tdTotal.textContent = t.total;
-
-    tr.append(tdTime, tdDelta, tdTotal);
-    tbody.appendChild(tr);
+  const time = new Date().toLocaleString("en-GB", {
+    day: "2-digit", month: "2-digit", year: "2-digit",
+    hour: "2-digit", minute: "2-digit"
   });
-}
 
-function closeModal() {
+  log.unshift({ time, delta, total });
+  localStorage.setItem(LOG_KEY, JSON.stringify(log));
+
+  animateChange(delta);
+  renderLog();
+
+  document.getElementById("total").textContent = total;
   document.getElementById("modal").classList.remove("active");
 }
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
+function animateChange(delta) {
+  const el = document.getElementById("lastChange");
+  el.textContent = (delta > 0 ? "+" : "") + delta;
+  el.style.color = delta > 0 ? "#4caf50" : "#f44336";
+  el.style.animation = "none";
+  el.offsetHeight;
+  el.style.animation = "flash 2.5s forwards";
+}
+
+function renderLog() {
+  const body = document.getElementById("logBody");
+  body.innerHTML = "";
+  log.forEach(t => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${t.time}</td>
+      <td class="${t.delta > 0 ? "add" : "sub"}">
+        ${t.delta > 0 ? "+" : ""}${t.delta}
+      </td>
+      <td>${t.total}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function undo() {
+  if (!log.length) return;
+  const last = log.shift();
+  total -= last.delta;
+  localStorage.setItem(TOTAL_KEY, total);
+  localStorage.setItem(LOG_KEY, JSON.stringify(log));
+  document.getElementById("total").textContent = total;
+  renderLog();
+}
+
+function reset() {
+  if (!confirm("Reset everything?")) return;
+  localStorage.clear();
+  location.reload();
 }
 </script>
 
