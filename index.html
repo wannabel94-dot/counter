@@ -18,7 +18,6 @@ body {
   text-align: center;
 }
 
-h1 { font-size: 2.2rem; margin-bottom: 10px; }
 h2 { font-size: 1.8rem; margin-bottom: 10px; }
 #lastChange {
   font-size: 1.6rem;
@@ -35,7 +34,6 @@ h2 { font-size: 1.8rem; margin-bottom: 10px; }
   100% { opacity: 0; transform: scale(1); }
 }
 
-/* Buttons */
 button { cursor: pointer; }
 button.reset, button.undo {
   margin: 5px;
@@ -77,12 +75,9 @@ button.reset, button.undo {
 }
 
 .display span.prefix { margin-right: auto; font-size: 2.2rem; font-weight: bold; }
-
-/* ADD/SUBTRACT screen themes */
 .display.add { background: #dfffdc; color: #0b3d1c; }
 .display.sub { background: #ffdcdc; color: #8a1c1c; }
 
-/* Keys grid */
 .keys {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -107,15 +102,45 @@ button.reset, button.undo {
 .clear { background: #2e7d32; color: #fff; }
 .panel.sub .keys button { background: #ef5350; color: #000; }
 .panel.sub .keys button.clear { background: #e53935; color: #fff; }
+
+/* Transaction log table */
+table {
+  margin: 20px auto;
+  border-collapse: collapse;
+  width: 90%;
+  max-width: 400px;
+}
+th, td {
+  border: 1px solid #fff;
+  padding: 8px 12px;
+  text-align: center;
+}
+th { background-color: #222; }
+tr:nth-child(even) { background-color: #1a1a1a; }
 </style>
 </head>
 
 <body>
+
 <div id="lastChange"></div>
-<h2>Total: €<span id="total">0</span></h2>
+<h2>Total: <span id="total">0</span></h2>
 
 <button class="undo" onclick="undo()">Undo</button>
 <button class="reset" onclick="reset()">Reset</button>
+
+<!-- Transaction log table -->
+<table id="logTable">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Change</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Filled dynamically -->
+  </tbody>
+</table>
 
 <!-- Calculator Modal -->
 <div class="modal" id="modal">
@@ -145,6 +170,8 @@ button.reset, button.undo {
 const TOTAL_KEY = "cash_total";
 const LAST_SCAN = "last_scan";
 const LAST_CHANGE_KEY = "last_change";
+const LOG_KEY = "transaction_log";
+
 let input = "";
 let mode = "add";
 
@@ -154,6 +181,10 @@ document.getElementById("total").textContent = total;
 
 // Load last change
 let lastChange = Number(localStorage.getItem(LAST_CHANGE_KEY) || 0);
+
+// Load transaction log
+let transactionLog = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
+updateLogTable();
 
 // NFC action
 const params = new URLSearchParams(location.search);
@@ -182,13 +213,11 @@ function openModal(){
     okButton.classList.add("add"); okButton.classList.remove("sub");
     panel.classList.add("add"); panel.classList.remove("sub");
     panel.style.boxShadow="0 0 60px rgba(76,175,80,0.8)";
-    document.getElementById("status").textContent="Add amount";
   } else {
     display.classList.add("sub"); display.classList.remove("add");
     okButton.classList.add("sub"); okButton.classList.remove("add");
     panel.classList.add("sub"); panel.classList.remove("add");
     panel.style.boxShadow="0 0 60px rgba(244,67,54,0.8)";
-    document.getElementById("status").textContent="Subtract amount";
   }
 }
 
@@ -206,7 +235,8 @@ function confirmAmount(){
   const amount=Number(input||0);
   if(!amount) return;
 
-  const delta = mode==="add"? amount : -amount;
+  let delta = mode==="add"? amount : -amount;
+  if(total + delta < 0) delta = -total;
   total += delta;
   localStorage.setItem(TOTAL_KEY,total);
   localStorage.setItem(LAST_CHANGE_KEY, delta);
@@ -215,24 +245,26 @@ function confirmAmount(){
   document.getElementById("total").textContent = total;
   showLastChange(delta);
 
+  // Add to log
+  transactionLog.push({delta, total});
+  localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
+  updateLogTable();
+
   if(navigator.vibrate) navigator.vibrate(40);
   document.getElementById("modal").classList.remove("active");
-  document.getElementById("status").textContent = `${mode==="add"?"+":"-"} €${amount}`;
 
-  const flashColor = mode==="add"? "#1b5e20": "#a00000";
+  const flashColor = delta > 0 ? "#1b5e20": "#a00000";
   document.body.style.background = flashColor;
   setTimeout(()=>document.body.style.background="#111",150);
 }
 
 function showLastChange(delta){
-  const lastEl = document.getElementById("lastChange");
-  lastEl.textContent = (delta>0?"+":"") + "€" + delta;
+  const lastEl=document.getElementById("lastChange");
+  lastEl.textContent = (delta>0?"+":"") + delta;
   lastEl.style.color = delta>0?"#4caf50":"#f44336";
   lastEl.style.opacity=1;
-  lastEl.style.animation="flash 2s forwards";
-
-  // Clear after animation
-  setTimeout(()=>{ lastEl.style.opacity=0; }, 1500);
+  lastEl.style.animation="flash 1.5s forwards";
+  setTimeout(()=>{ lastEl.style.opacity=0; },1500);
 }
 
 function undo(){
@@ -240,24 +272,46 @@ function undo(){
   if(!last) return;
 
   total -= last;
+  if(total<0) total=0;
   localStorage.setItem(TOTAL_KEY,total);
-  document.getElementById("total").textContent = total;
+  document.getElementById("total").textContent=total;
+
   lastChange=0;
   localStorage.removeItem(LAST_CHANGE_KEY);
   document.getElementById("lastChange").style.opacity=0;
-  document.getElementById("status").textContent="Last transaction undone";
+
+  // Remove last log entry
+  if(transactionLog.length>0) transactionLog.pop();
+  localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
+  updateLogTable();
 }
 
 function reset(){
   if(!confirm("Reset total?")) return;
   localStorage.clear();
+  transactionLog=[];
   location.reload();
 }
 
-// Optional PWA Service Worker
+function updateLogTable(){
+  const tbody = document.getElementById("logTable").querySelector("tbody");
+  tbody.innerHTML="";
+  transactionLog.forEach((t,i)=>{
+    const tr=document.createElement("tr");
+    const tdIndex=document.createElement("td"); tdIndex.textContent=i+1;
+    const tdDelta=document.createElement("td"); tdDelta.textContent=(t.delta>0?"+":"") + t.delta;
+    tdDelta.style.color = t.delta>0 ? "#4caf50" : "#f44336";
+    const tdTotal=document.createElement("td"); tdTotal.textContent = t.total;
+    tr.appendChild(tdIndex); tr.appendChild(tdDelta); tr.appendChild(tdTotal);
+    tbody.appendChild(tr);
+  });
+}
+
+// Optional: PWA Service Worker
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js");
 }
 </script>
+
 </body>
 </html>
