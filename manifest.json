@@ -1,11 +1,23 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
+  "name": "Contador NFC",
+  "short_name": "Contador",
+  "description": "PWA para añadir o restar con NFC",
+  "start_url": "/counter/?source=pwa",
+  "scope": "/counter/",
   "display": "standalone",
-  "name": "wannabel94-dot.github",
-  "orientation": "any",
-  "scope": "/",
-  "short_name": "wannabel94-dot.github",
-  "start_url": "https://wannabel94-dot.github.io/counter/?action=add",
-  "theme_color": "#ffffff"
+  "background_color": "#111111",
+  "theme_color": "#0b3d1c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/counter/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/counter/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
