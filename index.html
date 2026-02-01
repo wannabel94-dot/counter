@@ -20,7 +20,7 @@ body {
 
 h2 { font-size: 1.8rem; margin-bottom: 10px; }
 #lastChange {
-  font-size: 1.6rem;
+  font-size: 2.5rem;  /* bigger */
   margin-bottom: 15px;
   font-weight: bold;
   opacity: 0;
@@ -30,7 +30,7 @@ h2 { font-size: 1.8rem; margin-bottom: 10px; }
 /* Flash animation for last transaction */
 @keyframes flash {
   0% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
+  50% { opacity: 0.5; transform: scale(1.3); }
   100% { opacity: 0; transform: scale(1); }
 }
 
@@ -117,7 +117,8 @@ th, td {
   text-align: center;
 }
 th { background-color: #222; }
-tr:nth-child(even) { background-color: #1a1a1a; }
+tr.add { background-color: rgba(76,175,80,0.2); }
+tr.sub { background-color: rgba(244,67,54,0.2); }
 </style>
 </head>
 
@@ -242,13 +243,19 @@ function formatDate(date){
 }
 
 function confirmAmount(){
-  let amount=Number(input||0);
+  let amount = Number(input||0);
   if(!amount) return;
 
   let delta = mode==="add"? amount : -amount;
-  if(total + delta < 0) delta = -total;
-  total += delta;
 
+  // Prevent negative total entirely
+  if(total + delta < 0){
+    alert("Cannot subtract more than current total!");
+    document.getElementById("modal").classList.remove("active");
+    return;
+  }
+
+  total += delta;
   localStorage.setItem(TOTAL_KEY,total);
   localStorage.setItem(LAST_CHANGE_KEY, delta);
   lastChange = delta;
@@ -256,7 +263,7 @@ function confirmAmount(){
   document.getElementById("total").textContent = total;
   showLastChange(delta);
 
-  // Add to log with timestamp
+  // Add to log with timestamp, newest first
   transactionLog.unshift({delta, total, time: formatDate(new Date())});
   localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
   updateLogTable();
@@ -269,8 +276,8 @@ function showLastChange(delta){
   lastEl.textContent = (delta>0?"+":"") + delta;
   lastEl.style.color = delta>0?"#4caf50":"#f44336";
   lastEl.style.opacity=1;
-  lastEl.style.animation="flash 1.5s forwards";
-  setTimeout(()=>{ lastEl.style.opacity=0; },1500);
+  lastEl.style.animation="flash 2s forwards";  // longer duration
+  setTimeout(()=>{ lastEl.style.opacity=0; },2000);
 }
 
 function undo(){
@@ -286,7 +293,6 @@ function undo(){
   localStorage.removeItem(LAST_CHANGE_KEY);
   document.getElementById("lastChange").style.opacity=0;
 
-  // Remove last log entry
   if(transactionLog.length>0) transactionLog.shift();
   localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
   updateLogTable();
@@ -304,9 +310,9 @@ function updateLogTable(){
   tbody.innerHTML="";
   transactionLog.forEach((t)=>{
     const tr=document.createElement("tr");
+    tr.className = t.delta>0 ? "add" : "sub";  // whole row color
     const tdTime=document.createElement("td"); tdTime.textContent = t.time;
     const tdDelta=document.createElement("td"); tdDelta.textContent=(t.delta>0?"+":"") + t.delta;
-    tdDelta.style.color = t.delta>0 ? "#4caf50" : "#f44336";
     const tdTotal=document.createElement("td"); tdTotal.textContent = t.total;
     tr.appendChild(tdTime); tr.appendChild(tdDelta); tr.appendChild(tdTotal);
     tbody.appendChild(tr);
