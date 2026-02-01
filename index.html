@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Contador NFC de Dinero</title>
-
+<title>Contador de Efectivo NFC</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0b3d1c">
 
@@ -30,13 +29,14 @@ h2 {
   text-transform: uppercase;
 }
 
-/* ÚLTIMO CAMBIO */
+/* LAST CHANGE */
 #lastChange {
   font-size: 3.5rem;
   margin-bottom: 20px;
   font-weight: 700;
   opacity: 0;
   letter-spacing: -1px;
+  display: inline-block;
 }
 
 @keyframes flash {
@@ -45,18 +45,22 @@ h2 {
   100% { opacity: 0; transform: scale(1) translateY(0); }
 }
 
+#balanceLabel {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+/* BALANCE VALUE */
 #total {
-  font-size: 3rem; /* reduced size */
+  font-size: 3.8rem;
   font-weight: 700;
   letter-spacing: -2px;
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   display: inline-block;
 }
 
-/* BOTONES DE ACCIÓN */
+/* ===== ACTION BUTTONS ===== */
 .actions {
   margin: 30px 0 40px;
   display: flex;
@@ -76,31 +80,11 @@ button {
   overflow: hidden;
 }
 
-button::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
+button:active { transform: scale(0.96); }
 
-button:active::before {
-  width: 300px;
-  height: 300px;
-}
-
-button:active {
-  transform: scale(0.96);
-}
-
-/* DESHACER (ahora rojo) */
+/* UNDO */
 button.undo {
-  background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
+  background: linear-gradient(135deg, #ef5350 0%, #d32f2f 100%);
   color: #fff;
   box-shadow:
     0 4px 15px rgba(244,67,54,0.4),
@@ -114,7 +98,7 @@ button.undo:hover {
   transform: translateY(-2px);
 }
 
-/* REINICIAR */
+/* RESET */
 button.reset {
   background: linear-gradient(135deg, #424242 0%, #303030 100%);
   color: #fff;
@@ -154,7 +138,7 @@ button.reset:hover {
   backdrop-filter: blur(10px);
 }
 
-/* BRILLOS */
+/* GLOWS */
 .panel.add {
   box-shadow: 
     0 0 40px rgba(76,175,80,0.6),
@@ -169,7 +153,7 @@ button.reset:hover {
     0 20px 60px rgba(0,0,0,0.5);
 }
 
-/* PANTALLA */
+/* DISPLAY */
 .display {
   display: flex;
   align-items: center;
@@ -202,7 +186,7 @@ button.reset:hover {
     0 4px 12px rgba(244,67,54,0.2);
 }
 
-/* TECLAS */
+/* KEYS */
 .keys {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -222,58 +206,24 @@ button.reset:hover {
   color: #e8f5e9;
   box-shadow: 0 2px 8px rgba(76,175,80,0.3);
 }
-
-.panel.add .keys button:hover {
-  background: linear-gradient(135deg, #388e3c 0%, #43a047 100%);
-  box-shadow: 0 4px 12px rgba(76,175,80,0.4);
-}
-
-.panel.add .keys button.clear { 
-  background: linear-gradient(135deg, #43a047 0%, #4caf50 100%);
-}
-
 .panel.add .ok { 
   background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%);
   color: #1b5e20;
   box-shadow: 0 4px 15px rgba(76,175,80,0.4);
 }
-
-.panel.add .ok:hover {
-  box-shadow: 0 6px 20px rgba(76,175,80,0.5);
-}
-
 .panel.sub .keys button {
   background: linear-gradient(135deg, #d32f2f 0%, #e53935 100%);
   color: #fff;
   box-shadow: 0 2px 8px rgba(244,67,54,0.3);
 }
-
-.panel.sub .keys button:hover {
-  background: linear-gradient(135deg, #e53935 0%, #ef5350 100%);
-  box-shadow: 0 4px 12px rgba(244,67,54,0.4);
-}
-
-.panel.sub .keys button.clear { 
-  background: linear-gradient(135deg, #c62828 0%, #d32f2f 100%);
-  color: #fff;
-}
-
 .panel.sub .ok { 
   background: linear-gradient(135deg, #ef5350 0%, #e57373 100%);
   color: #1a1a1a;
   box-shadow: 0 4px 15px rgba(244,67,54,0.4);
 }
+.ok { grid-column: span 2; font-weight: 700; }
 
-.panel.sub .ok:hover {
-  box-shadow: 0 6px 20px rgba(244,67,54,0.5);
-}
-
-.ok { 
-  grid-column: span 2;
-  font-weight: 700;
-}
-
-/* TABLA */
+/* TABLE */
 table {
   margin: 20px auto;
   border-collapse: separate;
@@ -286,12 +236,10 @@ table {
   background: rgba(26,26,26,0.6);
   backdrop-filter: blur(10px);
 }
-
 th, td {
   padding: 14px 16px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
-
 th { 
   background: rgba(40,40,40,0.8);
   font-weight: 600;
@@ -300,9 +248,6 @@ th {
   letter-spacing: 1px;
   color: #999;
 }
-
-tbody tr:hover { background: rgba(255,255,255,0.03); }
-
 td.add { color: #66bb6a; font-weight: 600; }
 td.sub { color: #ef5350; font-weight: 600; }
 </style>
@@ -311,11 +256,16 @@ td.sub { color: #ef5350; font-weight: 600; }
 <body>
 
 <div id="lastChange"></div>
-<h2>Total: €<span id="total">0</span></h2>
+
+<div id="balanceLabel">Balance</div>
+<div>
+  <span id="total">0</span>
+  <span style="font-size:3.8rem; font-weight:700; vertical-align:middle; color:#4caf50;" id="currencySymbol">€</span>
+</div>
 
 <div class="actions">
   <button class="undo" onclick="undo()">Deshacer</button>
-  <button class="reset" onclick="resetBalance()">Reiniciar</button>
+  <button class="reset" onclick="reset()">Reiniciar</button>
 </div>
 
 <table>
@@ -323,13 +273,13 @@ td.sub { color: #ef5350; font-weight: 600; }
     <tr>
       <th>Hora</th>
       <th>Cambio</th>
-      <th>Total</th>
+      <th>Balance</th>
     </tr>
   </thead>
   <tbody id="logBody"></tbody>
 </table>
 
-<!-- CALCULADORA -->
+<!-- CALCULATOR MODAL -->
 <div class="modal" id="modal">
   <div class="panel add" id="panel">
     <div class="display add" id="display">
@@ -348,7 +298,7 @@ td.sub { color: #ef5350; font-weight: 600; }
       <button onclick="press(9)">9</button>
       <button onclick="press(0)">0</button>
       <button class="clear" onclick="clearInput()">C</button>
-      <button class="ok" onclick="confirmInput()">Aceptar</button>
+      <button class="ok" onclick="confirm()">OK</button>
     </div>
   </div>
 </div>
@@ -363,6 +313,7 @@ let input = "";
 let mode = "add";
 
 document.getElementById("total").textContent = total;
+document.getElementById("currencySymbol").style.color = "#4caf50";
 renderLog();
 
 const params = new URLSearchParams(location.search);
@@ -387,12 +338,12 @@ function updateDisplay(){
   document.getElementById("displayValue").textContent = input || "0";
 }
 
-function confirmInput(){
+function confirm(){
   const amount = Number(input);
   if(!amount) return;
 
   const delta = mode === "add" ? amount : -amount;
-  if(total + delta < 0){ alert("El total no puede ser menor que cero"); return; }
+  if(total + delta < 0){ alert("El balance no puede ser menor que 0"); return; }
 
   total += delta;
   localStorage.setItem(TOTAL_KEY, total);
@@ -408,16 +359,17 @@ function confirmInput(){
   animateChange(delta);
   renderLog();
   document.getElementById("total").textContent = total;
+  document.getElementById("currencySymbol").style.color = delta>0?"#4caf50":"#ef5350";
   document.getElementById("modal").classList.remove("active");
 }
 
 function animateChange(delta){
   const el = document.getElementById("lastChange");
-  el.textContent = (delta > 0 ? "+" : "") + delta;
-  el.style.color = delta > 0 ? "#4caf50" : "#f44336";
+  el.textContent = (delta>0?"+":"") + delta + "€";
+  el.style.color = delta>0 ? "#4caf50" : "#ef5350";
   el.style.animation = "none";
   el.offsetHeight;
-  el.style.animation = "flash 1.5s forwards"; /* quicker animation */
+  el.style.animation = "flash 1.8s forwards";
 }
 
 function renderLog(){
@@ -427,8 +379,8 @@ function renderLog(){
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${t.time}</td>
-      <td class="${t.delta>0?"add":"sub"}">${t.delta>0?"+":""}${t.delta}</td>
-      <td>€${t.total}</td>`;
+      <td class="${t.delta>0?"add":"sub"}">${t.delta>0?"+":""}${t.delta}€</td>
+      <td>${t.total}€</td>`;
     body.appendChild(tr);
   });
 }
@@ -437,21 +389,20 @@ function undo(){
   if(!log.length) return;
   const last = log.shift();
   total -= last.delta;
-  if(total<0) total=0;
   localStorage.setItem(TOTAL_KEY, total);
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
   document.getElementById("total").textContent = total;
   renderLog();
 }
 
-function resetBalance(){
-  if(!window.confirm("¿Estás seguro de reiniciar el saldo a 0?\nEsto borrará todas las transacciones.")) return;
+function reset(){
+  if(!confirm("¿Está seguro que desea reiniciar el balance a 0?\nEsto borrará todas las transacciones.")) return;
   total = 0;
   log = [];
   localStorage.setItem(TOTAL_KEY, total);
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
   document.getElementById("total").textContent = total;
-  document.getElementById("lastChange").style.opacity = 0;
+  document.getElementById("currencySymbol").style.color = "#4caf50";
   renderLog();
 }
 </script>
