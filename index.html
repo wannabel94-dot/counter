@@ -109,7 +109,7 @@ table {
   margin: 20px auto;
   border-collapse: collapse;
   width: 90%;
-  max-width: 400px;
+  max-width: 500px;
 }
 th, td {
   border: 1px solid #fff;
@@ -133,7 +133,7 @@ tr:nth-child(even) { background-color: #1a1a1a; }
 <table id="logTable">
   <thead>
     <tr>
-      <th>#</th>
+      <th>Time</th>
       <th>Change</th>
       <th>Total</th>
     </tr>
@@ -232,18 +232,23 @@ function updateDisplay(){
   valueSpan.textContent=input||"0";
 }
 
+function formatDate(date){
+  const d = date.getDate().toString().padStart(2,'0');
+  const m = (date.getMonth()+1).toString().padStart(2,'0');
+  const y = date.getFullYear().toString().slice(-2);
+  const h = date.getHours().toString().padStart(2,'0');
+  const min = date.getMinutes().toString().padStart(2,'0');
+  return `${d}/${m}/${y} - ${h}:${min}`;
+}
+
 function confirmAmount(){
   let amount=Number(input||0);
   if(!amount) return;
 
   let delta = mode==="add"? amount : -amount;
-
-  // Fix subtraction so total can't go below 0
-  if(total + delta < 0){
-    delta = -total;
-  }
-
+  if(total + delta < 0) delta = -total;
   total += delta;
+
   localStorage.setItem(TOTAL_KEY,total);
   localStorage.setItem(LAST_CHANGE_KEY, delta);
   lastChange = delta;
@@ -251,8 +256,8 @@ function confirmAmount(){
   document.getElementById("total").textContent = total;
   showLastChange(delta);
 
-  // Add to log
-  transactionLog.push({delta, total});
+  // Add to log with timestamp
+  transactionLog.unshift({delta, total, time: formatDate(new Date())});
   localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
   updateLogTable();
 
@@ -282,7 +287,7 @@ function undo(){
   document.getElementById("lastChange").style.opacity=0;
 
   // Remove last log entry
-  if(transactionLog.length>0) transactionLog.pop();
+  if(transactionLog.length>0) transactionLog.shift();
   localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
   updateLogTable();
 }
@@ -297,13 +302,13 @@ function reset(){
 function updateLogTable(){
   const tbody = document.getElementById("logTable").querySelector("tbody");
   tbody.innerHTML="";
-  transactionLog.forEach((t,i)=>{
+  transactionLog.forEach((t)=>{
     const tr=document.createElement("tr");
-    const tdIndex=document.createElement("td"); tdIndex.textContent=i+1;
+    const tdTime=document.createElement("td"); tdTime.textContent = t.time;
     const tdDelta=document.createElement("td"); tdDelta.textContent=(t.delta>0?"+":"") + t.delta;
     tdDelta.style.color = t.delta>0 ? "#4caf50" : "#f44336";
     const tdTotal=document.createElement("td"); tdTotal.textContent = t.total;
-    tr.appendChild(tdIndex); tr.appendChild(tdDelta); tr.appendChild(tdTotal);
+    tr.appendChild(tdTime); tr.appendChild(tdDelta); tr.appendChild(tdTotal);
     tbody.appendChild(tr);
   });
 }
