@@ -38,7 +38,9 @@ h2 {
 button {
   cursor: pointer;
 }
-button.reset, button.undo {
+
+button.reset,
+button.undo {
   margin: 5px;
   padding: 10px 20px;
   font-size: 1rem;
@@ -55,6 +57,7 @@ button.reset, button.undo {
   align-items: center;
   justify-content: center;
 }
+
 .modal.active {
   display: flex;
 }
@@ -85,23 +88,25 @@ button.reset, button.undo {
   font-weight: bold;
 }
 
-/* ADD/SUBTRACT screen themes */
+/* ADD / SUBTRACT display themes */
 .display.add {
-  background: #dfffdc;   /* pale green */
-  color: #0b3d1c;        /* dark green text */
+  background: #dfffdc;
+  color: #0b3d1c;
 }
 
 .display.sub {
-  background: #ffdcdc;   /* pale red */
-  color: #7d0000;        /* dark red text */
+  background: #ffe3e3;   /* lighter red */
+  color: #8a1c1c;
 }
 
+/* Keys grid */
 .keys {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
+/* Default (ADD mode) buttons */
 .keys button {
   font-size: 1.4rem;
   padding: 14px;
@@ -109,12 +114,14 @@ button.reset, button.undo {
   border-radius: 10px;
   background: #1b5e20;
   color: #e8f5e9;
+  transition: background 0.15s ease, transform 0.05s ease;
 }
 
 .keys button:active {
   transform: scale(0.96);
 }
 
+/* OK button */
 .ok {
   grid-column: span 2;
   font-weight: bold;
@@ -130,10 +137,23 @@ button.reset, button.undo {
   color: #000;
 }
 
+/* Clear button (add mode) */
 .clear {
   background: #2e7d32;
   color: #fff;
 }
+
+/* ---------- SUBTRACT MODE BUTTONS ---------- */
+.panel.sub .keys button {
+  background: #ef5350;   /* light red */
+  color: #000;
+}
+
+.panel.sub .keys button.clear {
+  background: #e53935;
+  color: #fff;
+}
+
 </style>
 </head>
 
