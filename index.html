@@ -60,6 +60,7 @@ button.reset, button.undo {
   border-radius: 16px;
   width: 280px;
   transition: box-shadow 0.2s ease;
+  background-color: rgba(20,20,20,0.95); /* opaque so table behind is hidden */
 }
 
 /* Display */
@@ -232,11 +233,16 @@ function updateDisplay(){
 }
 
 function confirmAmount(){
-  const amount=Number(input||0);
+  let amount=Number(input||0);
   if(!amount) return;
 
   let delta = mode==="add"? amount : -amount;
-  if(total + delta < 0) delta = -total;
+
+  // Fix subtraction so total can't go below 0
+  if(total + delta < 0){
+    delta = -total;
+  }
+
   total += delta;
   localStorage.setItem(TOTAL_KEY,total);
   localStorage.setItem(LAST_CHANGE_KEY, delta);
@@ -250,12 +256,7 @@ function confirmAmount(){
   localStorage.setItem(LOG_KEY, JSON.stringify(transactionLog));
   updateLogTable();
 
-  if(navigator.vibrate) navigator.vibrate(40);
   document.getElementById("modal").classList.remove("active");
-
-  const flashColor = delta > 0 ? "#1b5e20": "#a00000";
-  document.body.style.background = flashColor;
-  setTimeout(()=>document.body.style.background="#111",150);
 }
 
 function showLastChange(delta){
