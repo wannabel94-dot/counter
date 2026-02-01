@@ -229,13 +229,33 @@ function openModal() {
 
   modal.classList.add("active");
 
-  if (mode === "add") {
-    display.classList.add("add");
-    display.classList.remove("sub");
-    okButton.classList.add("add");
-    okButton.classList.remove("sub");
-    panel.style.boxShadow = "0 0 60px rgba(76,175,80,0.8)";
-    document.getElementById("status").textContent = "Add amount";
+ if (mode === "add") {
+  display.classList.add("add");
+  display.classList.remove("sub");
+
+  okButton.classList.add("add");
+  okButton.classList.remove("sub");
+
+  panel.classList.remove("sub");   // ✅ ADD
+  panel.classList.add("add");      // ✅ ADD
+
+  panel.style.boxShadow = "0 0 60px rgba(76,175,80,0.8)";
+  document.getElementById("status").textContent = "Add amount";
+} else {
+  display.classList.add("sub");
+  display.classList.remove("add");
+
+  okButton.classList.add("sub");
+  okButton.classList.remove("add");
+
+  panel.classList.remove("add");   // ✅ ADD
+  panel.classList.add("sub");      // ✅ ADD
+
+  panel.style.boxShadow = "0 0 60px rgba(244,67,54,0.8)";
+  document.getElementById("status").textContent = "Subtract amount";
+}
+
+ document.getElementById("status").textContent = "Add amount";
   } else {
     display.classList.add("sub");
     display.classList.remove("add");
