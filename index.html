@@ -9,9 +9,7 @@
 <meta name="theme-color" content="#0b3d1c">
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -303,47 +301,10 @@ th {
   color: #999;
 }
 
-tbody tr {
-  transition: background 0.2s ease;
-}
+tbody tr:hover { background: rgba(255,255,255,0.03); }
 
-tbody tr:hover {
-  background: rgba(255,255,255,0.03);
-}
-
-tbody tr:last-child td {
-  border-bottom: none;
-}
-
-td {
-  font-size: 0.95rem;
-}
-
-td.add { 
-  color: #66bb6a;
-  font-weight: 600;
-}
-
-td.sub { 
-  color: #ef5350;
-  font-weight: 600;
-}
-
-/* Responsive adjustments */
-@media (max-width: 480px) {
-  .panel {
-    width: 90%;
-    max-width: 320px;
-  }
-  
-  #total {
-    font-size: 3rem;
-  }
-  
-  #lastChange {
-    font-size: 2.8rem;
-  }
-}
+td.add { color: #66bb6a; font-weight: 600; }
+td.sub { color: #ef5350; font-weight: 600; }
 </style>
 </head>
 
@@ -354,7 +315,7 @@ td.sub {
 
 <div class="actions">
   <button class="undo" onclick="undo()">Undo</button>
-  <button class="reset" onclick="reset()">Reset</button>
+  <button class="reset" onclick="resetBalance()">Reset</button>
 </div>
 
 <table>
@@ -387,7 +348,7 @@ td.sub {
       <button onclick="press(9)">9</button>
       <button onclick="press(0)">0</button>
       <button class="clear" onclick="clearInput()">C</button>
-      <button class="ok" onclick="confirm()">OK</button>
+      <button class="ok" onclick="confirmInput()">OK</button>
     </div>
   </div>
 </div>
@@ -426,7 +387,7 @@ function updateDisplay(){
   document.getElementById("displayValue").textContent = input || "0";
 }
 
-function confirm(){
+function confirmInput(){
   const amount = Number(input);
   if(!amount) return;
 
@@ -476,19 +437,22 @@ function undo(){
   if(!log.length) return;
   const last = log.shift();
   total -= last.delta;
+  if(total<0) total=0;
   localStorage.setItem(TOTAL_KEY, total);
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
   document.getElementById("total").textContent = total;
   renderLog();
 }
 
-function reset(){
-  if(!confirm("Reset everything?")) return;
+// ✅ FIXED RESET
+function resetBalance(){
+  if(!window.confirm("Are you sure you want to reset the balance to 0?\nThis will clear all transactions.")) return;
   total = 0;
   log = [];
   localStorage.setItem(TOTAL_KEY, total);
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
   document.getElementById("total").textContent = total;
+  document.getElementById("lastChange").style.opacity = 0;
   renderLog();
 }
 </script>
