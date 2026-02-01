@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Contador NFC</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b3d1c">
 
 <style>
 * { box-sizing: border-box; }
@@ -468,6 +470,13 @@ tbody tr:last-child td {
 </div>
 
 <script>
+
+  if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(() => console.log('Service worker registered'))
+    .catch(err => console.log('SW registration failed:', err));
+}
+  
 const TOTAL_KEY = "total";
 const LOG_KEY = "log";
 
