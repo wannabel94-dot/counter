@@ -20,7 +20,7 @@ body {
 
 h2 { font-size: 1.8rem; margin-bottom: 10px; }
 
-/* Last transaction animation */
+/* LAST CHANGE */
 #lastChange {
   font-size: 3rem;
   margin-bottom: 15px;
@@ -34,16 +34,56 @@ h2 { font-size: 1.8rem; margin-bottom: 10px; }
   100% { opacity: 0; transform: scale(1); }
 }
 
-button {
-  cursor: pointer;
-  border-radius: 10px;
-  border: none;
+/* ===== ACTION BUTTONS ===== */
+.actions {
+  margin: 10px 0 20px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
 }
 
-button.reset, button.undo {
-  margin: 5px;
-  padding: 10px 20px;
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 14px;
   font-size: 1rem;
+  padding: 12px 22px;
+  font-weight: 600;
+  transition: transform 0.08s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* UNDO */
+button.undo {
+  background: linear-gradient(145deg, #ffca28, #f9a825);
+  color: #111;
+  box-shadow:
+    0 0 12px rgba(255,193,7,0.5),
+    inset 0 -2px 4px rgba(0,0,0,0.2);
+}
+
+button.undo:hover {
+  box-shadow:
+    0 0 20px rgba(255,193,7,0.8),
+    inset 0 -2px 4px rgba(0,0,0,0.2);
+}
+
+/* RESET */
+button.reset {
+  background: linear-gradient(145deg, #ef5350, #c62828);
+  color: #fff;
+  box-shadow:
+    0 0 14px rgba(244,67,54,0.6),
+    inset 0 -2px 4px rgba(0,0,0,0.3);
+}
+
+button.reset:hover {
+  box-shadow:
+    0 0 24px rgba(244,67,54,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.3);
 }
 
 /* MODAL */
@@ -57,7 +97,7 @@ button.reset, button.undo {
 }
 .modal.active { display: flex; }
 
-/* CALCULATOR PANEL */
+/* PANEL */
 .panel {
   width: 280px;
   padding: 20px;
@@ -68,15 +108,11 @@ button.reset, button.undo {
 
 /* GLOWS */
 .panel.add {
-  box-shadow:
-    0 0 30px rgba(76,175,80,0.8),
-    0 0 80px rgba(76,175,80,0.5);
+  box-shadow: 0 0 30px rgba(76,175,80,0.8), 0 0 80px rgba(76,175,80,0.5);
 }
 
 .panel.sub {
-  box-shadow:
-    0 0 30px rgba(244,67,54,0.85),
-    0 0 80px rgba(244,67,54,0.5);
+  box-shadow: 0 0 30px rgba(244,67,54,0.85), 0 0 80px rgba(244,67,54,0.5);
 }
 
 /* DISPLAY */
@@ -88,12 +124,10 @@ button.reset, button.undo {
   border-radius: 10px;
   margin-bottom: 14px;
   font-weight: bold;
-  transition: box-shadow 0.2s ease;
 }
 
 .display .prefix { margin-right: auto; }
 
-/* Display themes + glow */
 .display.add {
   background: #e6ffe6;
   color: #0b3d1c;
@@ -106,58 +140,36 @@ button.reset, button.undo {
   box-shadow: inset 0 0 10px rgba(244,67,54,0.6);
 }
 
-/* KEYS GRID */
+/* KEYS */
 .keys {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
-/* ADD MODE */
+.keys button {
+  font-size: 1.4rem;
+  padding: 14px;
+  border-radius: 10px;
+}
+
 .panel.add .keys button {
   background: #1b5e20;
   color: #e8f5e9;
 }
 
-.panel.add .keys button.clear {
-  background: #2e7d32;
-}
+.panel.add .keys button.clear { background: #2e7d32; }
+.panel.add .ok { background: #4caf50; color: #000; }
 
-.panel.add .ok {
-  background: #4caf50;
-  color: #000;
-}
-
-/* SUB MODE */
 .panel.sub .keys button {
   background: #ef5350;
   color: #000;
 }
 
-.panel.sub .keys button.clear {
-  background: #e53935;
-  color: #fff;
-}
+.panel.sub .keys button.clear { background: #e53935; color: #fff; }
+.panel.sub .ok { background: #f44336; color: #000; }
 
-.panel.sub .ok {
-  background: #f44336;
-  color: #000;
-}
-
-/* COMMON BUTTON STYLES */
-.keys button {
-  font-size: 1.4rem;
-  padding: 14px;
-}
-
-.keys button:active {
-  transform: scale(0.95);
-}
-
-.ok {
-  grid-column: span 2;
-  font-weight: bold;
-}
+.ok { grid-column: span 2; font-weight: bold; }
 
 /* TABLE */
 table {
@@ -184,8 +196,10 @@ td.sub { color: #f44336; }
 <div id="lastChange"></div>
 <h2>Total: <span id="total">0</span></h2>
 
-<button class="undo" onclick="undo()">Undo</button>
-<button class="reset" onclick="reset()">Reset</button>
+<div class="actions">
+  <button class="undo" onclick="undo()">Undo</button>
+  <button class="reset" onclick="reset()">Reset</button>
+</div>
 
 <table>
   <thead>
@@ -198,7 +212,7 @@ td.sub { color: #f44336; }
   <tbody id="logBody"></tbody>
 </table>
 
-<!-- MODAL -->
+<!-- CALCULATOR MODAL -->
 <div class="modal" id="modal">
   <div class="panel add" id="panel">
     <div class="display add" id="display">
@@ -243,47 +257,32 @@ if (params.get("action")) {
 function openModal() {
   input = "";
   updateDisplay();
-
-  const panel = document.getElementById("panel");
-  const display = document.getElementById("display");
-
-  panel.className = "panel " + mode;
-  display.className = "display " + mode;
-
+  document.getElementById("panel").className = "panel " + mode;
+  document.getElementById("display").className = "display " + mode;
   document.getElementById("modal").classList.add("active");
 }
 
-function press(n) {
-  input += n;
-  updateDisplay();
-}
+function press(n){ input += n; updateDisplay(); }
+function clearInput(){ input = ""; updateDisplay(); }
 
-function clearInput() {
-  input = "";
-  updateDisplay();
-}
-
-function updateDisplay() {
+function updateDisplay(){
   document.querySelector(".prefix").textContent = mode === "add" ? "+" : "-";
   document.getElementById("displayValue").textContent = input || "0";
 }
 
-function confirm() {
+function confirm(){
   const amount = Number(input);
-  if (!amount) return;
+  if(!amount) return;
 
   const delta = mode === "add" ? amount : -amount;
-  if (total + delta < 0) {
-    alert("Total cannot go below zero");
-    return;
-  }
+  if(total + delta < 0){ alert("Total cannot go below zero"); return; }
 
   total += delta;
   localStorage.setItem(TOTAL_KEY, total);
 
   const time = new Date().toLocaleString("en-GB", {
-    day: "2-digit", month: "2-digit", year: "2-digit",
-    hour: "2-digit", minute: "2-digit"
+    day:"2-digit", month:"2-digit", year:"2-digit",
+    hour:"2-digit", minute:"2-digit"
   });
 
   log.unshift({ time, delta, total });
@@ -291,12 +290,11 @@ function confirm() {
 
   animateChange(delta);
   renderLog();
-
   document.getElementById("total").textContent = total;
   document.getElementById("modal").classList.remove("active");
 }
 
-function animateChange(delta) {
+function animateChange(delta){
   const el = document.getElementById("lastChange");
   el.textContent = (delta > 0 ? "+" : "") + delta;
   el.style.color = delta > 0 ? "#4caf50" : "#f44336";
@@ -305,23 +303,21 @@ function animateChange(delta) {
   el.style.animation = "flash 2.5s forwards";
 }
 
-function renderLog() {
+function renderLog(){
   const body = document.getElementById("logBody");
   body.innerHTML = "";
-  log.forEach(t => {
+  log.forEach(t=>{
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${t.time}</td>
-      <td class="${t.delta > 0 ? "add" : "sub"}">
-        ${t.delta > 0 ? "+" : ""}${t.delta}
-      </td>
+      <td class="${t.delta>0?"add":"sub"}">${t.delta>0?"+":""}${t.delta}</td>
       <td>${t.total}</td>`;
     body.appendChild(tr);
   });
 }
 
-function undo() {
-  if (!log.length) return;
+function undo(){
+  if(!log.length) return;
   const last = log.shift();
   total -= last.delta;
   localStorage.setItem(TOTAL_KEY, total);
@@ -330,8 +326,8 @@ function undo() {
   renderLog();
 }
 
-function reset() {
-  if (!confirm("Reset everything?")) return;
+function reset(){
+  if(!confirm("Reset everything?")) return;
   localStorage.clear();
   location.reload();
 }
