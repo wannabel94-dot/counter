@@ -3,13 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Contador de Efectivo NFC</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b3d1c">
+<title>Contador NFC de Efectivo</title>
 
 <style>
 * { box-sizing: border-box; }
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
@@ -20,13 +17,21 @@ body {
   min-height: 100vh;
 }
 
-h2 { 
+/* Balance label & number */
+#balanceLabel {
   font-size: 1.2rem;
   margin-bottom: 8px;
   font-weight: 500;
   color: #999;
-  letter-spacing: 0.5px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#total {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  display: inline-block;
 }
 
 /* LAST CHANGE */
@@ -35,38 +40,16 @@ h2 {
   margin-bottom: 20px;
   font-weight: 700;
   opacity: 0;
-  letter-spacing: -1px;
-  display: inline-block;
 }
 
 @keyframes flash {
   0% { opacity: 1; transform: scale(1) translateY(0); }
-  50% { opacity: 0.8; transform: scale(1.4) translateY(-5px); }
+  50% { opacity: 0.8; transform: scale(1.3) translateY(-5px); }
   100% { opacity: 0; transform: scale(1) translateY(0); }
 }
 
-#balanceLabel {
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #999;
-  margin-bottom: 4px;
-}
-
-/* BALANCE VALUE */
-#total {
-  font-size: 3.8rem;
-  font-weight: 700;
-  letter-spacing: -2px;
-  display: inline-block;
-}
-
-/* ===== ACTION BUTTONS ===== */
-.actions {
-  margin: 30px 0 40px;
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
+/* Buttons */
+.actions { margin: 30px 0 40px; display: flex; justify-content: center; gap: 16px; }
 
 button {
   cursor: pointer;
@@ -75,193 +58,82 @@ button {
   font-size: 1rem;
   padding: 14px 28px;
   font-weight: 600;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
 }
-
 button:active { transform: scale(0.96); }
 
-/* UNDO */
+/* Undo (red now) */
 button.undo {
-  background: linear-gradient(135deg, #ef5350 0%, #d32f2f 100%);
+  background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
   color: #fff;
-  box-shadow:
-    0 4px 15px rgba(244,67,54,0.4),
-    0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 15px rgba(244,67,54,0.4);
 }
+button.undo:hover { box-shadow: 0 6px 25px rgba(244,67,54,0.6); }
 
-button.undo:hover {
-  box-shadow:
-    0 6px 25px rgba(244,67,54,0.6),
-    0 4px 8px rgba(0,0,0,0.2);
-  transform: translateY(-2px);
-}
-
-/* RESET */
+/* Reset */
 button.reset {
   background: linear-gradient(135deg, #424242 0%, #303030 100%);
   color: #fff;
-  box-shadow:
-    0 4px 15px rgba(0,0,0,0.4),
-    0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
 }
+button.reset:hover { box-shadow: 0 6px 25px rgba(0,0,0,0.5); }
 
-button.reset:hover {
-  box-shadow:
-    0 6px 25px rgba(0,0,0,0.5),
-    0 4px 8px rgba(0,0,0,0.3);
-  transform: translateY(-2px);
-}
-
-/* MODAL */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.92);
-  backdrop-filter: blur(8px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
+/* Modal */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: none; align-items: center; justify-content: center; z-index:1000; }
 .modal.active { display: flex; }
 
-/* PANEL */
+/* Panel */
 .panel {
-  width: 320px;
-  padding: 28px;
-  border-radius: 28px;
-  background: rgba(26,26,26,0.98);
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
+  width: 320px; padding: 28px; border-radius: 28px;
+  background: rgba(26,26,26,0.98); border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.3s ease; backdrop-filter: blur(10px);
 }
 
-/* GLOWS */
-.panel.add {
-  box-shadow: 
-    0 0 40px rgba(76,175,80,0.6),
-    0 0 100px rgba(76,175,80,0.3),
-    0 20px 60px rgba(0,0,0,0.5);
-}
+/* Glows */
+.panel.add { box-shadow: 0 0 40px rgba(76,175,80,0.6), 0 0 100px rgba(76,175,80,0.3); }
+.panel.sub { box-shadow: 0 0 40px rgba(244,67,54,0.6), 0 0 100px rgba(244,67,54,0.3); }
 
-.panel.sub {
-  box-shadow: 
-    0 0 40px rgba(244,67,54,0.6),
-    0 0 100px rgba(244,67,54,0.3),
-    0 20px 60px rgba(0,0,0,0.5);
-}
+/* Display */
+.display { display: flex; align-items: center; font-size: 2.8rem; padding: 18px 20px; border-radius: 16px; margin-bottom: 20px; font-weight: 700; letter-spacing: -1px; }
+.display .prefix { margin-right: auto; font-size: 2.2rem; }
+.display.add { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); color: #1b5e20; box-shadow: inset 0 2px 8px rgba(76,175,80,0.3); }
+.display.sub { background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); color: #b71c1c; box-shadow: inset 0 2px 8px rgba(244,67,54,0.3); }
 
-/* DISPLAY */
-.display {
-  display: flex;
-  align-items: center;
-  font-size: 2.8rem;
-  padding: 18px 20px;
-  border-radius: 16px;
-  margin-bottom: 20px;
-  font-weight: 700;
-  letter-spacing: -1px;
-}
+/* Keys */
+.keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.keys button { font-size: 1.5rem; padding: 18px; border-radius: 14px; font-weight: 600; transition: all 0.15s ease; }
+.panel.add .keys button { background: linear-gradient(135deg, #2e7d32 0%, #388e3c 100%); color: #e8f5e9; }
+.panel.add .keys button.clear { background: linear-gradient(135deg, #43a047 0%, #4caf50 100%); }
+.panel.add .ok { background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%); color: #1b5e20; }
 
-.display .prefix { 
-  margin-right: auto;
-  font-size: 2.2rem;
-}
+.panel.sub .keys button { background: linear-gradient(135deg, #d32f2f 0%, #e53935 100%); color: #fff; }
+.panel.sub .keys button.clear { background: linear-gradient(135deg, #c62828 0%, #d32f2f 100%); color: #fff; }
+.panel.sub .ok { background: linear-gradient(135deg, #ef5350 0%, #e57373 100%); color: #1a1a1a; }
 
-.display.add {
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-  color: #1b5e20;
-  box-shadow: 
-    inset 0 2px 8px rgba(76,175,80,0.3),
-    0 4px 12px rgba(76,175,80,0.2);
-}
-
-.display.sub {
-  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-  color: #b71c1c;
-  box-shadow: 
-    inset 0 2px 8px rgba(244,67,54,0.3),
-    0 4px 12px rgba(244,67,54,0.2);
-}
-
-/* KEYS */
-.keys {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.keys button {
-  font-size: 1.5rem;
-  padding: 18px;
-  border-radius: 14px;
-  font-weight: 600;
-  transition: all 0.15s ease;
-}
-
-.panel.add .keys button {
-  background: linear-gradient(135deg, #2e7d32 0%, #388e3c 100%);
-  color: #e8f5e9;
-  box-shadow: 0 2px 8px rgba(76,175,80,0.3);
-}
-.panel.add .ok { 
-  background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%);
-  color: #1b5e20;
-  box-shadow: 0 4px 15px rgba(76,175,80,0.4);
-}
-.panel.sub .keys button {
-  background: linear-gradient(135deg, #d32f2f 0%, #e53935 100%);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(244,67,54,0.3);
-}
-.panel.sub .ok { 
-  background: linear-gradient(135deg, #ef5350 0%, #e57373 100%);
-  color: #1a1a1a;
-  box-shadow: 0 4px 15px rgba(244,67,54,0.4);
-}
 .ok { grid-column: span 2; font-weight: 700; }
 
-/* TABLE */
-table {
-  margin: 20px auto;
-  border-collapse: separate;
-  border-spacing: 0;
-  width: 95%;
-  max-width: 600px;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  background: rgba(26,26,26,0.6);
-  backdrop-filter: blur(10px);
-}
-th, td {
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-th { 
-  background: rgba(40,40,40,0.8);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 1px;
-  color: #999;
-}
+/* Table */
+table { margin: 20px auto; border-collapse: separate; border-spacing: 0; width: 95%; max-width: 600px; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4); background: rgba(26,26,26,0.6); backdrop-filter: blur(10px); }
+th, td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+th { background: rgba(40,40,40,0.8); font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; color: #999; }
 td.add { color: #66bb6a; font-weight: 600; }
 td.sub { color: #ef5350; font-weight: 600; }
+
+@media (max-width: 480px) {
+  .panel { width: 90%; max-width: 320px; }
+  #total { font-size: 2.5rem; }
+  #lastChange { font-size: 2.8rem; }
+}
 </style>
 </head>
 
 <body>
 
 <div id="lastChange"></div>
-
 <div id="balanceLabel">Balance</div>
-<div>
-  <span id="total">0</span>
-  <span style="font-size:3.8rem; font-weight:700; vertical-align:middle; color:#4caf50;" id="currencySymbol">€</span>
-</div>
+<div><span id="total">€0</span></div>
 
 <div class="actions">
   <button class="undo" onclick="undo()">Deshacer</button>
@@ -279,7 +151,7 @@ td.sub { color: #ef5350; font-weight: 600; }
   <tbody id="logBody"></tbody>
 </table>
 
-<!-- CALCULATOR MODAL -->
+<!-- Calculator Modal -->
 <div class="modal" id="modal">
   <div class="panel add" id="panel">
     <div class="display add" id="display">
@@ -312,8 +184,7 @@ let log = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
 let input = "";
 let mode = "add";
 
-document.getElementById("total").textContent = total;
-document.getElementById("currencySymbol").style.color = "#4caf50";
+document.getElementById("total").textContent = "€" + total;
 renderLog();
 
 const params = new URLSearchParams(location.search);
@@ -358,18 +229,17 @@ function confirm(){
 
   animateChange(delta);
   renderLog();
-  document.getElementById("total").textContent = total;
-  document.getElementById("currencySymbol").style.color = delta>0?"#4caf50":"#ef5350";
+  document.getElementById("total").textContent = "€" + total;
   document.getElementById("modal").classList.remove("active");
 }
 
 function animateChange(delta){
   const el = document.getElementById("lastChange");
-  el.textContent = (delta>0?"+":"") + delta + "€";
-  el.style.color = delta>0 ? "#4caf50" : "#ef5350";
+  el.textContent = (delta>0?"+":"") + delta;
+  el.style.color = delta>0?"#4caf50":"#ef5350";
   el.style.animation = "none";
   el.offsetHeight;
-  el.style.animation = "flash 1.8s forwards";
+  el.style.animation = "flash 1.8s forwards"; // slightly quicker
 }
 
 function renderLog(){
@@ -379,8 +249,8 @@ function renderLog(){
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${t.time}</td>
-      <td class="${t.delta>0?"add":"sub"}">${t.delta>0?"+":""}${t.delta}€</td>
-      <td>${t.total}€</td>`;
+      <td class="${t.delta>0?"add":"sub"}">${t.delta>0?"+":""}${t.delta}</td>
+      <td>${t.total}</td>`;
     body.appendChild(tr);
   });
 }
@@ -391,7 +261,7 @@ function undo(){
   total -= last.delta;
   localStorage.setItem(TOTAL_KEY, total);
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
-  document.getElementById("total").textContent = total;
+  document.getElementById("total").textContent = "€" + total;
   renderLog();
 }
 
@@ -401,8 +271,7 @@ function reset(){
   log = [];
   localStorage.setItem(TOTAL_KEY, total);
   localStorage.setItem(LOG_KEY, JSON.stringify(log));
-  document.getElementById("total").textContent = total;
-  document.getElementById("currencySymbol").style.color = "#4caf50";
+  document.getElementById("total").textContent = "€" + total;
   renderLog();
 }
 </script>
