@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NFC Cash Counter</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#111" />
+
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #111;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 { font-size: 2.5rem; }
+    h2 { font-size: 1.8rem; margin-top: 10px; }
+    input {
+      font-size: 2rem;
+      width: 150px;
+      text-align: center;
+    }
+    button {
+      font-size: 1.2rem;
+      padding: 10px 16px;
+      margin: 10px;
+    }
+    .add { color: #4caf50; }
+    .sub { color: #f44336; }
+  </style>
+</head>
+
+<body>
+  <h1 id="actionLabel">Ready</h1>
+  <h2>Total: €<span id="total">0</span></h2>
+
+  <p>Amount</p>
+  <input id="amount" type="number" value="10" step="5" />
+
+  <div>
+    <button onclick="undo()">Undo</button>
+    <button onclick="resetTotal()">Reset</button>
+  </div>
+
+  <script>
+    // --- Storage keys ---
+    const TOTAL_KEY = "cash_total";
+    const LAST_KEY = "last_change";
+    const LAST_TIME = "last_scan_time";
+
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get("action"); // add | sub
+
+    let total = Number(localStorage.getItem(TOTAL_KEY) || 0);
+    document.getElementById("total").textContent = total;
+
+    // --- Prevent double scans ---
+    const now = Date.now();
+    const lastScan = Number(localStorage.getItem(LAST_TIME) || 0);
+    if (now - lastScan < 1500) {
+      document.getElementById("actionLabel").textContent = "Ignored (too fast)";
+      throw new Error("Double scan blocked");
+    }
+    localStorage.setItem(LAST_TIME, now);
+
+    if (action) {
+      const amount = Number(
+        localStorage.getItem("current_amount") ||
+        document.getElementById("amount").value
+      );
+
+      const delta = action === "add" ? amount : -amount;
+      total += delta;
+
+      localStorage.setItem(TOTAL_KEY, total);
+      localStorage.setItem(LAST_KEY, delta);
+
+      document.getElementById("actionLabel").textContent =
+        `${delta > 0 ? "+" : "−"} €${Math.abs(delta)}`;
+      document.getElementById("actionLabel").className =
+        delta > 0 ? "add" : "sub";
+      document.getElementById("total").textContent = total;
+    }
+
+    // Save amount changes
+    document.getElementById("amount").addEventListener("change", e => {
+      localStorage.setItem("current_amount", e.target.value);
+    });
+
+    function undo() {
+      const last = Number(localStorage.getItem(LAST_KEY) || 0);
+      if (!last) return;
+      total -= last;
+      localStorage.setItem(TOTAL_KEY, total);
+      localStorage.removeItem(LAST_KEY);
+      document.getElementById("total").textContent = total;
+      document.getElementById("actionLabel").textContent = "Undone";
+    }
+
+    function resetTotal() {
+      if (!confirm("Reset total?")) return;
+      localStorage.clear();
+      location.reload();
+    }
+
+    // --- Service worker ---
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
+  </script>
+</body>
+</html>
