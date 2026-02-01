@@ -41,23 +41,33 @@ h2 {
   display: flex;
 }
 
-/* Green ADD panel */
+/* Calculator panel */
 .panel {
-  background: linear-gradient(180deg, #0b3d1c, #052812);
   padding: 20px;
   border-radius: 16px;
   width: 280px;
-  box-shadow: 0 0 30px rgba(76,175,80,0.4);
+  box-shadow: 0 0 30px rgba(0,0,0,0.3);
 }
 
+/* Display */
 .display {
   font-size: 2.2rem;
-  background: #000;
-  color: #4caf50;
   padding: 12px;
   margin-bottom: 12px;
   text-align: right;
   border-radius: 8px;
+  font-weight: bold;
+}
+
+/* ADD and SUBTRACT screen themes */
+.display.add {
+  background: #dfffdc;   /* pale green */
+  color: #0b3d1c;        /* dark green text */
+}
+
+.display.sub {
+  background: #ffdcdc;   /* pale red */
+  color: #7d0000;        /* dark red text */
 }
 
 .keys {
@@ -81,9 +91,17 @@ h2 {
 
 .ok {
   grid-column: span 2;
+  font-weight: bold;
+}
+
+.ok.add {
   background: #4caf50;
   color: #000;
-  font-weight: bold;
+}
+
+.ok.sub {
+  background: #f44336;
+  color: #000;
 }
 
 .clear {
@@ -110,8 +128,8 @@ button.reset {
 
 <!-- Calculator Modal -->
 <div class="modal" id="modal">
-  <div class="panel">
-    <div class="display" id="display">0</div>
+  <div class="panel" id="panel">
+    <div class="display" id="display">+0</div>
     <div class="keys">
       <button onclick="press(1)">1</button>
       <button onclick="press(2)">2</button>
@@ -124,7 +142,7 @@ button.reset {
       <button onclick="press(9)">9</button>
       <button onclick="press(0)">0</button>
       <button class="clear" onclick="clearInput()">C</button>
-      <button class="ok" onclick="confirmAmount()">OK</button>
+      <button class="ok add" id="okButton" onclick="confirmAmount()">OK</button>
     </div>
   </div>
 </div>
@@ -155,9 +173,30 @@ if (action && now - last > 1500) {
 function openModal() {
   input = "";
   updateDisplay();
-  document.getElementById("modal").classList.add("active");
-  document.getElementById("status").textContent =
-    mode === "add" ? "Add amount" : "Subtract amount";
+
+  const modal = document.getElementById("modal");
+  const display = document.getElementById("display");
+  const okButton = document.getElementById("okButton");
+  const panel = document.getElementById("panel");
+
+  modal.classList.add("active");
+
+  // Set ADD or SUBTRACT theme
+  if (mode === "add") {
+    display.classList.add("add");
+    display.classList.remove("sub");
+    okButton.classList.add("add");
+    okButton.classList.remove("sub");
+    panel.style.boxShadow = "0 0 30px rgba(76,175,80,0.4)";
+    document.getElementById("status").textContent = "Add amount";
+  } else {
+    display.classList.add("sub");
+    display.classList.remove("add");
+    okButton.classList.add("sub");
+    okButton.classList.remove("add");
+    panel.style.boxShadow = "0 0 30px rgba(244,67,54,0.4)";
+    document.getElementById("status").textContent = "Subtract amount";
+  }
 }
 
 function press(n) {
@@ -171,7 +210,9 @@ function clearInput() {
 }
 
 function updateDisplay() {
-  document.getElementById("display").textContent = input || "0";
+  const display = document.getElementById("display");
+  const prefix = mode === "add" ? "+" : "-";
+  display.textContent = prefix + (input || "0");
 }
 
 function confirmAmount() {
@@ -189,10 +230,9 @@ function confirmAmount() {
     `${mode === "add" ? "+" : "-"} €${amount}`;
 
   // flash feedback
-  document.body.style.background = "#1b5e20";
-  setTimeout(() => {
-    document.body.style.background = "#111";
-  }, 150);
+  const flashColor = mode === "add" ? "#1b5e20" : "#a00000";
+  document.body.style.background = flashColor;
+  setTimeout(() => { document.body.style.background = "#111"; }, 150);
 }
 
 function reset() {
