@@ -28,6 +28,23 @@ h2 {
   margin-bottom: 20px;
 }
 
+#lastChange {
+  font-size: 1.6rem;
+  margin-bottom: 15px;
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+}
+button.reset, button.undo {
+  margin: 5px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: none;
+}
+
 /* Modal */
 .modal {
   position: fixed;
@@ -46,7 +63,7 @@ h2 {
   padding: 20px;
   border-radius: 16px;
   width: 280px;
-  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+  transition: box-shadow 0.2s ease;
 }
 
 /* Display */
@@ -54,12 +71,21 @@ h2 {
   font-size: 2.2rem;
   padding: 12px;
   margin-bottom: 12px;
-  text-align: right;
   border-radius: 8px;
+  font-weight: bold;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.display span.prefix {
+  margin-right: auto;
+  font-size: 2.2rem;
   font-weight: bold;
 }
 
-/* ADD and SUBTRACT screen themes */
+/* ADD/SUBTRACT screen themes */
 .display.add {
   background: #dfffdc;   /* pale green */
   color: #0b3d1c;        /* dark green text */
@@ -108,14 +134,6 @@ h2 {
   background: #2e7d32;
   color: #fff;
 }
-
-button.reset {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 10px;
-  border: none;
-}
 </style>
 </head>
 
@@ -123,13 +141,18 @@ button.reset {
 
 <h1 id="status">Ready</h1>
 <h2>Total: €<span id="total">0</span></h2>
+<div id="lastChange"></div>
 
+<button class="undo" onclick="undo()">Undo</button>
 <button class="reset" onclick="reset()">Reset</button>
 
 <!-- Calculator Modal -->
 <div class="modal" id="modal">
   <div class="panel" id="panel">
-    <div class="display" id="display">+0</div>
+    <div class="display" id="display">
+      <span class="prefix">+</span>
+      <span class="value">0</span>
+    </div>
     <div class="keys">
       <button onclick="press(1)">1</button>
       <button onclick="press(2)">2</button>
@@ -150,12 +173,17 @@ button.reset {
 <script>
 const TOTAL_KEY = "cash_total";
 const LAST_SCAN = "last_scan";
+const LAST_CHANGE_KEY = "last_change";
 let input = "";
 let mode = "add";
 
 // Load total
 let total = Number(localStorage.getItem(TOTAL_KEY) || 0);
 document.getElementById("total").textContent = total;
+
+// Load last change if exists
+let lastChange = Number(localStorage.getItem(LAST_CHANGE_KEY) || 0);
+updateLastChangeDisplay();
 
 // Read NFC action
 const params = new URLSearchParams(location.search);
@@ -181,20 +209,19 @@ function openModal() {
 
   modal.classList.add("active");
 
-  // Set ADD or SUBTRACT theme
   if (mode === "add") {
     display.classList.add("add");
     display.classList.remove("sub");
     okButton.classList.add("add");
     okButton.classList.remove("sub");
-    panel.style.boxShadow = "0 0 30px rgba(76,175,80,0.4)";
+    panel.style.boxShadow = "0 0 50px rgba(76,175,80,0.7)";
     document.getElementById("status").textContent = "Add amount";
   } else {
     display.classList.add("sub");
     display.classList.remove("add");
     okButton.classList.add("sub");
     okButton.classList.remove("add");
-    panel.style.boxShadow = "0 0 30px rgba(244,67,54,0.4)";
+    panel.style.boxShadow = "0 0 50px rgba(244,67,54,0.7)";
     document.getElementById("status").textContent = "Subtract amount";
   }
 }
@@ -211,17 +238,27 @@ function clearInput() {
 
 function updateDisplay() {
   const display = document.getElementById("display");
-  const prefix = mode === "add" ? "+" : "-";
-  display.textContent = prefix + (input || "0");
+  const prefixSpan = display.querySelector(".prefix");
+  const valueSpan = display.querySelector(".value");
+
+  prefixSpan.textContent = mode === "add" ? "+" : "-";
+  valueSpan.textContent = input || "0";
 }
 
 function confirmAmount() {
   const amount = Number(input || 0);
   if (!amount) return;
 
-  total += mode === "add" ? amount : -amount;
+  const delta = mode === "add" ? amount : -amount;
+  total += delta;
   localStorage.setItem(TOTAL_KEY, total);
+
+  // save last transaction for undo
+  localStorage.setItem(LAST_CHANGE_KEY, delta);
+
   document.getElementById("total").textContent = total;
+  lastChange = delta;
+  updateLastChangeDisplay();
 
   if (navigator.vibrate) navigator.vibrate(40);
 
@@ -233,6 +270,32 @@ function confirmAmount() {
   const flashColor = mode === "add" ? "#1b5e20" : "#a00000";
   document.body.style.background = flashColor;
   setTimeout(() => { document.body.style.background = "#111"; }, 150);
+}
+
+function updateLastChangeDisplay() {
+  const lastEl = document.getElementById("lastChange");
+  if (!lastChange) {
+    lastEl.textContent = "";
+    return;
+  }
+  lastEl.textContent = (lastChange > 0 ? "+" : "") + lastChange;
+  lastEl.style.color = lastChange > 0 ? "#4caf50" : "#f44336";
+  lastEl.style.fontWeight = "bold";
+}
+
+function undo() {
+  const last = Number(localStorage.getItem(LAST_CHANGE_KEY) || 0);
+  if (!last) return;
+
+  total -= last;
+  localStorage.setItem(TOTAL_KEY, total);
+  document.getElementById("total").textContent = total;
+
+  lastChange = 0;
+  localStorage.removeItem(LAST_CHANGE_KEY);
+  updateLastChangeDisplay();
+
+  document.getElementById("status").textContent = "Last transaction undone";
 }
 
 function reset() {
