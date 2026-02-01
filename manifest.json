@@ -1,12 +1,11 @@
 {
   "name": "Contador NFC",
   "short_name": "Contador",
-  "description": "PWA para añadir o restar con NFC",
   "start_url": "/counter/?source=pwa",
   "scope": "/counter/",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#0b3d1c",
+  "background_color": "#1a1a2a",
+  "theme_color": "#1a1a2a",
   "orientation": "portrait-primary",
   "icons": [
     {
