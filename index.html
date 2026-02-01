@@ -5,72 +5,110 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>NFC Cash Counter</title>
 
-<link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#111" />
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b3d1c">
 
 <style>
-  body {
-    font-family: system-ui, sans-serif;
-    background: #111;
-    color: #fff;
-    margin: 0;
-    padding: 20px;
-    text-align: center;
-  }
-  h1 { font-size: 2.5rem; }
-  h2 { font-size: 1.8rem; }
+body {
+  font-family: system-ui, sans-serif;
+  background: #111;
+  color: #fff;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
 
-  /* Modal */
-  .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.8);
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal.active { display: flex; }
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+}
 
-  .panel {
-    background: #222;
-    padding: 20px;
-    border-radius: 12px;
-    width: 280px;
-  }
+h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
 
-  .display {
-    font-size: 2rem;
-    background: #000;
-    padding: 10px;
-    margin-bottom: 10px;
-    text-align: right;
-  }
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal.active {
+  display: flex;
+}
 
-  .keys {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
+/* Green ADD panel */
+.panel {
+  background: linear-gradient(180deg, #0b3d1c, #052812);
+  padding: 20px;
+  border-radius: 16px;
+  width: 280px;
+  box-shadow: 0 0 30px rgba(76,175,80,0.4);
+}
 
-  button {
-    font-size: 1.4rem;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-  }
+.display {
+  font-size: 2.2rem;
+  background: #000;
+  color: #4caf50;
+  padding: 12px;
+  margin-bottom: 12px;
+  text-align: right;
+  border-radius: 8px;
+}
 
-  .ok { background: #4caf50; color: #000; grid-column: span 2; }
-  .clear { background: #f44336; color: #000; }
+.keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.keys button {
+  font-size: 1.4rem;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: #1b5e20;
+  color: #e8f5e9;
+}
+
+.keys button:active {
+  transform: scale(0.96);
+}
+
+.ok {
+  grid-column: span 2;
+  background: #4caf50;
+  color: #000;
+  font-weight: bold;
+}
+
+.clear {
+  background: #2e7d32;
+  color: #fff;
+}
+
+button.reset {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: none;
+}
 </style>
 </head>
 
 <body>
+
 <h1 id="status">Ready</h1>
 <h2>Total: €<span id="total">0</span></h2>
 
-<button onclick="reset()">Reset</button>
+<button class="reset" onclick="reset()">Reset</button>
 
-<!-- Keypad Modal -->
+<!-- Calculator Modal -->
 <div class="modal" id="modal">
   <div class="panel">
     <div class="display" id="display">0</div>
@@ -93,23 +131,23 @@
 
 <script>
 const TOTAL_KEY = "cash_total";
-const LAST_TIME = "last_scan";
-let mode = null;
+const LAST_SCAN = "last_scan";
 let input = "";
+let mode = "add";
 
-const params = new URLSearchParams(location.search);
-const action = params.get("action");
-
+// Load total
 let total = Number(localStorage.getItem(TOTAL_KEY) || 0);
 document.getElementById("total").textContent = total;
 
-// Prevent double scans
+// Read NFC action
+const params = new URLSearchParams(location.search);
+const action = params.get("action");
 const now = Date.now();
-const last = Number(localStorage.getItem(LAST_TIME) || 0);
-if (now - last < 1500) {
-  document.getElementById("status").textContent = "Ignored";
-} else if (action) {
-  localStorage.setItem(LAST_TIME, now);
+const last = Number(localStorage.getItem(LAST_SCAN) || 0);
+
+// Prevent double scans
+if (action && now - last > 1500) {
+  localStorage.setItem(LAST_SCAN, now);
   mode = action;
   openModal();
 }
@@ -144,9 +182,17 @@ function confirmAmount() {
   localStorage.setItem(TOTAL_KEY, total);
   document.getElementById("total").textContent = total;
 
+  if (navigator.vibrate) navigator.vibrate(40);
+
   document.getElementById("modal").classList.remove("active");
   document.getElementById("status").textContent =
-    `${mode === "add" ? "+" : "−"} €${amount}`;
+    `${mode === "add" ? "+" : "-"} €${amount}`;
+
+  // flash feedback
+  document.body.style.background = "#1b5e20";
+  setTimeout(() => {
+    document.body.style.background = "#111";
+  }, 150);
 }
 
 function reset() {
@@ -155,9 +201,11 @@ function reset() {
   location.reload();
 }
 
+// Service Worker (optional)
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
 </script>
+
 </body>
 </html>
