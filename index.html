@@ -484,8 +484,12 @@ function undo(){
 
 function reset(){
   if(!confirm("Reset everything?")) return;
-  localStorage.clear();
-  location.reload();
+  total = 0;
+  log = [];
+  localStorage.setItem(TOTAL_KEY, total);
+  localStorage.setItem(LOG_KEY, JSON.stringify(log));
+  document.getElementById("total").textContent = total;
+  renderLog();
 }
 </script>
 
