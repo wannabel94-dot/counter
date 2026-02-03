@@ -255,6 +255,36 @@ tbody tr:last-child td {
 .keys button.clear {
   color: #aaa;
 }
+/* Quick add / sub buttons */
+button.quick {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0 12px;
+  border-radius: 22px;
+}
+
+button.quick.add {
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+  box-shadow:
+    0 6px 20px rgba(102,187,106,0.4),
+    0 2px 8px rgba(0,0,0,0.3);
+  color: #fff;
+}
+
+button.quick.sub {
+  background: linear-gradient(135deg, #e53935, #ef5350);
+  box-shadow:
+    0 6px 20px rgba(239,83,80,0.4),
+    0 2px 8px rgba(0,0,0,0.3);
+  color: #fff;
+}
+
+button.quick:active {
+  transform: scale(0.95);
+}
 
 /* OK button */
 .ok {
@@ -295,7 +325,9 @@ tbody tr:last-child td {
 </div>
 
 <div class="actions">
+  <button class="quick add" onclick="quickAction('add')">+</button>
   <button class="undo" onclick="undo()">Deshacer</button>
+  <button class="quick sub" onclick="quickAction('sub')">−</button>
 </div>
 
 <table>
@@ -412,6 +444,11 @@ function renderLog(){
         <td>${t.total}</td>
       </tr>`;
   });
+}
+
+function quickAction(action){
+  mode = action;
+  openModal();
 }
 
 function undo(){
